@@ -21,6 +21,7 @@ export default function Navbar() {
             ["vantagens", "Vantagens"],
             ["aplicacoes", "Aplicações"],
             ["prototipo", "Protótipo"],
+            ["roadmap", "Roadmap"],
             ["contacto", "Contacto"],
           ].map(([id, label]) => (
             <button key={id} type="button" onClick={() => scrollTo(id)}>

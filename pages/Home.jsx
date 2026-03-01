@@ -7,6 +7,7 @@ import Technology from "../components/Technology";
 import Features from "../components/Features";
 import Applications from "../components/Applications";
 import Prototype from "../components/Prototype";
+import Roadmap from "../components/Roadmap";
 import Team from "../components/Team";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -22,6 +23,7 @@ export default function Home() {
       <Features />
       <Applications />
       <Prototype />
+      <Roadmap />
       <Team />
       <Contact />
       <Footer />
