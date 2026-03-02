@@ -2,74 +2,94 @@ import React, { useState } from "react";
 
 const milestones = [
   {
-    id: "kickoff",
-    date: "Set 2025",
-    title: "Kickoff e alinhamento",
-    summary: "Definicao do desafio tecnico e metas do projeto.",
-    statusLabel: "Concluido",
-    statusTone: "concluido",
+    id: "requirements",
+    step: "1",
+    title: "Requirements",
+    subtitle: "Definition & scoping",
+    phaseLabel: "Finalizing now",
+    phaseTone: "current",
+    current: true,
     details: [
-      "Levantamento de requisitos para operacao em frio extremo.",
-      "Definicao de arquitetura base do sistema off-grid.",
-      "Distribuicao de tarefas e plano inicial de entregas.",
+      "Closing functional and technical requirements for the prototype.",
+      "Prioritizing use cases for remote and low-temperature operation.",
+      "Locking acceptance criteria for the next development phases.",
     ],
-    partners: ["Equipa PIC-G21", "Orientadores IST"],
+    partners: ["PIC-G21 Team", "IST Advisors", "Project Stakeholders"],
   },
   {
-    id: "investigacao",
-    date: "Out 2025",
-    title: "Pesquisa e benchmark",
-    summary: "Analise de solucoes existentes e selecao de componentes.",
-    statusLabel: "Concluido",
-    statusTone: "concluido",
+    id: "hardware",
+    step: "2",
+    title: "Hardware",
+    subtitle: "Design & assembly",
+    phaseLabel: "Planned",
+    phaseTone: "planned",
+    current: false,
     details: [
-      "Comparacao de controladores MPPT, baterias e sensores.",
-      "Estimativa de consumo energetico para varios cenarios.",
-      "Identificacao de riscos tecnicos e custos de prototipagem.",
+      "Electrical layout for panel, battery and controller integration.",
+      "Mechanical assembly of enclosure and heating module.",
+      "Initial bench checks for safety and thermal behavior.",
     ],
-    partners: ["Laboratorio IST", "Fornecedores tecnicos"],
+    partners: ["PIC-G21 Team", "Electronics Lab"],
   },
   {
-    id: "prototipo",
-    date: "Nov-Dez 2025",
-    title: "Prototipo funcional",
-    summary: "Montagem, testes e ajuste da logica de controlo.",
-    statusLabel: "Em curso",
-    statusTone: "em-curso",
+    id: "firmware",
+    step: "3",
+    title: "Firmware",
+    subtitle: "Embedded development",
+    phaseLabel: "Planned",
+    phaseTone: "planned",
+    current: false,
     details: [
-      "Integracao do ESP32 com sensores de temperatura e humidade.",
-      "Calibracao do elemento de aquecimento para 5-30W.",
-      "Teste de autonomia energetica com carga real.",
+      "Implementing control logic on ESP32.",
+      "Sensor reading, telemetry structure and threshold rules.",
+      "Power management strategy for autonomous operation.",
     ],
-    partners: ["Equipa PIC-G21", "Workshop de eletronica"],
+    partners: ["PIC-G21 Team", "Embedded Mentors"],
   },
   {
-    id: "validacao",
-    date: "Jan 2026",
-    title: "Validacao externa",
-    summary: "Sessoes tecnicas com entidades parceiras e feedback.",
-    statusLabel: "Planeado",
-    statusTone: "planeado",
+    id: "module-testing",
+    step: "4",
+    title: "Module Testing",
+    subtitle: "Component-level validation",
+    phaseLabel: "Planned",
+    phaseTone: "planned",
+    current: false,
     details: [
-      "Reunioes com empresas para validar casos de uso reais.",
-      "Recolha de feedback sobre robustez e manutencao.",
-      "Ajustes finais da solucao para demonstracao publica.",
+      "Testing each subsystem independently before integration.",
+      "Verifying heating response under controlled conditions.",
+      "Registering issues and fixes per component.",
     ],
-    partners: ["Empresas parceiras", "Mentores de industria"],
+    partners: ["PIC-G21 Team", "Lab Support"],
   },
   {
-    id: "entrega",
-    date: "Fev 2026",
-    title: "Entrega final e apresentacao",
-    summary: "Preparacao da demonstracao, documentacao e roadmap futuro.",
-    statusLabel: "Planeado",
-    statusTone: "planeado",
+    id: "system-validation",
+    step: "5",
+    title: "System Validation",
+    subtitle: "Integrated testing",
+    phaseLabel: "Planned",
+    phaseTone: "planned",
+    current: false,
     details: [
-      "Consolidacao de resultados tecnicos e custos do prototipo.",
-      "Preparacao da apresentacao final e relatorio do projeto.",
-      "Definicao de proximas iteracoes para escala industrial.",
+      "Integrated run of hardware and firmware as a full system.",
+      "Stress scenarios for continuity and energy autonomy.",
+      "Validation against final acceptance criteria.",
     ],
-    partners: ["Equipa PIC-G21", "Juri academico"],
+    partners: ["PIC-G21 Team", "Academic Jury"],
+  },
+  {
+    id: "electroday",
+    step: "6",
+    title: "ElectroDay",
+    subtitle: "Final prototype demo",
+    phaseLabel: "Planned",
+    phaseTone: "planned",
+    current: false,
+    details: [
+      "Final demo setup and execution script.",
+      "Packaging of technical results and evidence.",
+      "Public presentation of prototype and roadmap next steps.",
+    ],
+    partners: ["PIC-G21 Team", "ElectroDay Audience"],
   },
 ];
 
@@ -79,66 +99,74 @@ export default function Roadmap() {
     milestones.find((milestone) => milestone.id === selectedId) ?? null;
 
   return (
-    <section id="roadmap" className="section section-light roadmap-section">
+    <section id="roadmap" className="section roadmap-execution">
       <div className="container">
-        <header className="section-heading">
-          <p className="kicker">Roadmap</p>
-          <h2>Evolucao e progresso do projeto</h2>
+        <header className="section-heading roadmap-heading">
+          <p className="kicker">Chapter 9 | Roadmap</p>
+          <h2>Execution Plan</h2>
           <p>
-            Clica num circulo para abrir os detalhes daquele marco, incluindo
-            decisoes tecnicas, discussoes e entidades envolvidas.
+            Structured development roadmap with an{" "}
+            <strong>iterative build-test-improve cycle.</strong>
           </p>
         </header>
 
-        <div className="roadmap-track" role="list">
+        <div className="execution-timeline" role="list">
           {milestones.map((milestone, index) => {
             const isActive = selectedId === milestone.id;
+            const sideClass = index % 2 === 0 ? "left" : "right";
 
             return (
               <article
                 key={milestone.id}
-                className={`roadmap-item${isActive ? " is-active" : ""}`}
+                className={`execution-step ${sideClass}${
+                  isActive ? " is-active" : ""
+                }${milestone.current ? " is-current" : ""}`}
                 role="listitem"
               >
+                <div className="execution-step-body">
+                  <h3>{milestone.title}</h3>
+                  <p>{milestone.subtitle}</p>
+                  {milestone.current ? (
+                    <span className="execution-current-badge">Now finishing</span>
+                  ) : null}
+                </div>
+
                 <button
                   type="button"
-                  className="roadmap-node"
+                  className="execution-node"
                   onClick={() =>
                     setSelectedId((current) =>
                       current === milestone.id ? null : milestone.id
                     )
                   }
                   aria-expanded={isActive}
-                  aria-controls="roadmap-detail-panel"
+                  aria-controls="execution-detail-panel"
                 >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <span>{milestone.step}</span>
                 </button>
-
-                <p className="roadmap-date">{milestone.date}</p>
-                <h3>{milestone.title}</h3>
-                <p className="roadmap-summary">{milestone.summary}</p>
-                <p className={`roadmap-status status-${milestone.statusTone}`}>
-                  {milestone.statusLabel}
-                </p>
               </article>
             );
           })}
         </div>
 
-        <div id="roadmap-detail-panel" className="roadmap-detail" aria-live="polite">
+        <div id="execution-detail-panel" className="execution-detail" aria-live="polite">
           {selectedMilestone ? (
             <>
-              <div className="roadmap-detail-header">
+              <div className="execution-detail-header">
                 <div>
-                  <p className="roadmap-detail-label">Marco selecionado</p>
+                  <p className="execution-detail-label">
+                    Step {selectedMilestone.step} details
+                  </p>
                   <h3>{selectedMilestone.title}</h3>
                 </div>
-                <p className="roadmap-detail-date">{selectedMilestone.date}</p>
+                <p className={`execution-phase phase-${selectedMilestone.phaseTone}`}>
+                  {selectedMilestone.phaseLabel}
+                </p>
               </div>
 
-              <div className="roadmap-detail-grid">
+              <div className="execution-detail-grid">
                 <div>
-                  <h4>Detalhes</h4>
+                  <h4>Work items</h4>
                   <ul>
                     {selectedMilestone.details.map((detail) => (
                       <li key={detail}>{detail}</li>
@@ -147,10 +175,10 @@ export default function Roadmap() {
                 </div>
 
                 <div>
-                  <h4>Entidades envolvidas</h4>
-                  <div className="roadmap-tags">
+                  <h4>Involved parties</h4>
+                  <div className="execution-tags">
                     {selectedMilestone.partners.map((partner) => (
-                      <span key={partner} className="roadmap-tag">
+                      <span key={partner} className="execution-tag">
                         {partner}
                       </span>
                     ))}
@@ -159,9 +187,8 @@ export default function Roadmap() {
               </div>
             </>
           ) : (
-            <p className="roadmap-detail-empty">
-              Nenhum detalhe visivel por defeito. Clica num circulo para abrir
-              informacao desse marco.
+            <p className="execution-detail-empty">
+              No details open by default. Click a numbered node to open one step.
             </p>
           )}
         </div>
