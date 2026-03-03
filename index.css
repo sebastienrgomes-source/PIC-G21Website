@@ -666,6 +666,24 @@ p {
   font: inherit;
 }
 
+.contact-form button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.contact-feedback {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.contact-feedback-success {
+  color: #14703a;
+}
+
+.contact-feedback-error {
+  color: #a13c2f;
+}
+
 .team-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
