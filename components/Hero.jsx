@@ -14,8 +14,8 @@ export default function Hero() {
         <p className="hero-badge">Inovação Sustentável | 100% Off-Grid</p>
 
         <h1>
-          Aquecedor Localizado Autónomo
-          <span>Alimentado a Energia Solar</span>
+          HeatSpot OFF-Grid
+          <span>Aquecimento Inteligente a Energia Solar</span>
         </h1>
 
         <p className="hero-subtitle">

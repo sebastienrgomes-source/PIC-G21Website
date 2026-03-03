@@ -1,4 +1,4 @@
-# PIC-G21 — Instruções para executar o projeto
+# HeatSpot OFF-Grid — Instruções para executar o projeto
 
 Este repositório usa Vite + React. Abaixo há duas opções completas para rodar o projeto: via Docker (sem instalar Node no Windows) ou localmente instalando Node.
 

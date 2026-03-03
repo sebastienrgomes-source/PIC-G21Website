@@ -29,7 +29,7 @@ export default function Team() {
       <div className="container">
         <header className="section-heading">
           <p className="kicker">Equipa</p>
-          <h2>PIC-G21</h2>
+          <h2>HeatSpot OFF-Grid</h2>
           <p>
             Projeto académico focado em engenharia aplicada, sustentabilidade e proteção de
             infraestruturas críticas.

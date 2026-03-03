@@ -14,7 +14,7 @@ const milestones = [
       "Prioritizing use cases for remote and low-temperature operation.",
       "Locking acceptance criteria for the next development phases.",
     ],
-    partners: ["PIC-G21 Team", "IST Advisors", "Project Stakeholders"],
+    partners: ["HeatSpot Team", "IST Advisors", "Project Stakeholders"],
   },
   {
     id: "hardware",
@@ -29,7 +29,7 @@ const milestones = [
       "Mechanical assembly of enclosure and heating module.",
       "Initial bench checks for safety and thermal behavior.",
     ],
-    partners: ["PIC-G21 Team", "Electronics Lab"],
+    partners: ["HeatSpot Team", "Electronics Lab"],
   },
   {
     id: "firmware",
@@ -44,7 +44,7 @@ const milestones = [
       "Sensor reading, telemetry structure and threshold rules.",
       "Power management strategy for autonomous operation.",
     ],
-    partners: ["PIC-G21 Team", "Embedded Mentors"],
+    partners: ["HeatSpot Team", "Embedded Mentors"],
   },
   {
     id: "module-testing",
@@ -59,7 +59,7 @@ const milestones = [
       "Verifying heating response under controlled conditions.",
       "Registering issues and fixes per component.",
     ],
-    partners: ["PIC-G21 Team", "Lab Support"],
+    partners: ["HeatSpot Team", "Lab Support"],
   },
   {
     id: "system-validation",
@@ -74,7 +74,7 @@ const milestones = [
       "Stress scenarios for continuity and energy autonomy.",
       "Validation against final acceptance criteria.",
     ],
-    partners: ["PIC-G21 Team", "Academic Jury"],
+    partners: ["HeatSpot Team", "Academic Jury"],
   },
   {
     id: "electroday",
@@ -89,7 +89,7 @@ const milestones = [
       "Packaging of technical results and evidence.",
       "Public presentation of prototype and roadmap next steps.",
     ],
-    partners: ["PIC-G21 Team", "ElectroDay Audience"],
+    partners: ["HeatSpot Team", "ElectroDay Audience"],
   },
 ];
 

@@ -18,7 +18,7 @@ export default function Navbar() {
       <div className="container nav">
         <button type="button" className="brand" onClick={() => scrollTo("hero")}>
           <span className="brand-mark">☀</span>
-          <span>Aquecedor Solar</span>
+          <span>HeatSpot OFF-Grid</span>
         </button>
 
         <nav className="nav-links">

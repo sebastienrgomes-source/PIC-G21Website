@@ -1,4 +1,4 @@
 export const projectData = {
-  title: "Aquecedor Solar Autónomo",
+  title: "HeatSpot OFF-Grid",
   tagline: "Energia limpa para proteção de infraestruturas críticas",
 };
