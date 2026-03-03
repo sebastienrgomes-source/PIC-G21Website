@@ -13,7 +13,6 @@ export default function Contact() {
       .filter(Boolean);
   }, []);
 
-  const teamEmailDisplay = teamEmails.join(", ");
   const primaryEmail = teamEmails[0] ?? "sebastien.r.gomes@tecnico.ulisboa.pt";
   const ccEmails = teamEmails.slice(1);
 
@@ -21,7 +20,9 @@ export default function Contact() {
     pt: {
       kicker: "Contacto",
       title: "Vamos Falar Sobre o Projeto",
-      intro: `Esta mensagem é enviada para a Equipa HeatSpot OFF-Grid: ${teamEmailDisplay}.`,
+      intro: "Esta mensagem será enviada para a Equipa HeatSpot OFF-Grid.",
+      deliveryHint:
+        "Ao clicar em enviar, abre o teu cliente de email com os destinatários da equipa. Para concluir, tens de clicar em Enviar no teu email.",
       name: "Nome",
       email: "Email",
       message: "Mensagem",
@@ -30,7 +31,7 @@ export default function Contact() {
       messagePlaceholder: "Quero saber mais sobre o sistema...",
       submit: "Enviar Mensagem",
       success:
-        "Abrimos o teu cliente de email com a mensagem pronta para enviar à equipa.",
+        "Cliente de email aberto. A mensagem só é enviada depois de confirmares no teu email.",
       error:
         "Não foi possível abrir o cliente de email automaticamente. Envia manualmente para a equipa.",
       subject: "Novo contacto | HeatSpot OFF-Grid",
@@ -42,7 +43,9 @@ export default function Contact() {
     en: {
       kicker: "Contact",
       title: "Let's Talk About the Project",
-      intro: `This message is sent to the HeatSpot OFF-Grid team: ${teamEmailDisplay}.`,
+      intro: "This message will be sent to the HeatSpot OFF-Grid team.",
+      deliveryHint:
+        "When you click send, your email app opens with team recipients prefilled. To finish, you must click Send in your email app.",
       name: "Name",
       email: "Email",
       message: "Message",
@@ -51,7 +54,7 @@ export default function Contact() {
       messagePlaceholder: "I want to know more about the system...",
       submit: "Send Message",
       success:
-        "Your email app was opened with the message ready to send to the team.",
+        "Email app opened. The message is only sent after you confirm in your email app.",
       error:
         "It was not possible to open your email app automatically. Please send manually to the team.",
       subject: "New contact | HeatSpot OFF-Grid",
@@ -63,7 +66,9 @@ export default function Contact() {
     fr: {
       kicker: "Contact",
       title: "Parlons du Projet",
-      intro: `Ce message est envoyé à l'équipe HeatSpot OFF-Grid : ${teamEmailDisplay}.`,
+      intro: "Ce message sera envoyé à l'équipe HeatSpot OFF-Grid.",
+      deliveryHint:
+        "Quand vous cliquez sur envoyer, votre application email s'ouvre avec les destinataires de l'équipe. Pour finaliser, vous devez cliquer sur Envoyer dans votre application email.",
       name: "Nom",
       email: "Email",
       message: "Message",
@@ -72,7 +77,7 @@ export default function Contact() {
       messagePlaceholder: "Je veux en savoir plus sur le système...",
       submit: "Envoyer le message",
       success:
-        "Votre application email a été ouverte avec le message prêt à être envoyé à l'équipe.",
+        "Application email ouverte. Le message est envoyé uniquement après votre confirmation.",
       error:
         "Impossible d'ouvrir automatiquement votre application email. Veuillez envoyer manuellement à l'équipe.",
       subject: "Nouveau contact | HeatSpot OFF-Grid",
@@ -84,7 +89,9 @@ export default function Contact() {
     es: {
       kicker: "Contacto",
       title: "Hablemos del Proyecto",
-      intro: `Este mensaje se envía al equipo HeatSpot OFF-Grid: ${teamEmailDisplay}.`,
+      intro: "Este mensaje será enviado al equipo HeatSpot OFF-Grid.",
+      deliveryHint:
+        "Al hacer clic en enviar, se abre tu app de email con los destinatarios del equipo. Para finalizar, debes pulsar Enviar en tu app de email.",
       name: "Nombre",
       email: "Email",
       message: "Mensaje",
@@ -93,7 +100,7 @@ export default function Contact() {
       messagePlaceholder: "Quiero saber más sobre el sistema...",
       submit: "Enviar Mensaje",
       success:
-        "Se abrió tu aplicación de email con el mensaje listo para enviarse al equipo.",
+        "Aplicación de email abierta. El mensaje solo se envía después de tu confirmación.",
       error:
         "No fue posible abrir tu aplicación de email automáticamente. Envíalo manualmente al equipo.",
       subject: "Nuevo contacto | HeatSpot OFF-Grid",
@@ -135,8 +142,7 @@ export default function Contact() {
 
     try {
       window.location.href = `mailto:${primaryEmail}?${params.toString()}`;
-      event.currentTarget.reset();
-      setFeedback({ type: "success", message: text.success });
+      setFeedback({ type: "info", message: text.success });
     } catch {
       setFeedback({ type: "error", message: text.error });
     }
@@ -149,6 +155,7 @@ export default function Contact() {
           <p className="kicker">{text.kicker}</p>
           <h2>{text.title}</h2>
           <p>{text.intro}</p>
+          <p className="contact-note">{text.deliveryHint}</p>
         </header>
 
         <form className="contact-form" onSubmit={handleSubmit}>

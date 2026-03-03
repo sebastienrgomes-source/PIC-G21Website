@@ -671,12 +671,22 @@ p {
   font-weight: 700;
 }
 
+.contact-note {
+  margin-top: 0.65rem;
+  font-size: 1rem;
+  color: #4b5c84;
+}
+
 .contact-feedback-success {
   color: #14703a;
 }
 
 .contact-feedback-error {
   color: #a13c2f;
+}
+
+.contact-feedback-info {
+  color: #1f4fbf;
 }
 
 .team-grid {
