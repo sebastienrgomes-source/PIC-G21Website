@@ -666,11 +666,6 @@ p {
   font: inherit;
 }
 
-.contact-form button:disabled {
-  opacity: 0.72;
-  cursor: wait;
-}
-
 .contact-feedback {
   margin: 0.2rem 0 0;
   font-weight: 700;
