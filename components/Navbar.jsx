@@ -5,6 +5,14 @@ export default function Navbar() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const navItems = [
+    ["desafio", "Desafio"],
+    ["solucao", "Solução"],
+    ["prototipo", "Protótipo"],
+    ["roadmap", "Roadmap"],
+    ["equipa", "Equipa"],
+  ];
+
   return (
     <header className="nav-shell">
       <div className="container nav">
@@ -14,16 +22,7 @@ export default function Navbar() {
         </button>
 
         <nav className="nav-links">
-          {[
-            ["desafio", "Desafio"],
-            ["solucao", "Solução"],
-            ["tecnologia", "Tecnologia"],
-            ["vantagens", "Vantagens"],
-            ["aplicacoes", "Aplicações"],
-            ["prototipo", "Protótipo"],
-            ["roadmap", "Roadmap"],
-            ["contacto", "Contacto"],
-          ].map(([id, label]) => (
+          {navItems.map(([id, label]) => (
             <button key={id} type="button" onClick={() => scrollTo(id)}>
               {label}
             </button>
