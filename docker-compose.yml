@@ -1,7 +1,7 @@
 services:
   app:
     image: node:25-alpine
-    command: sh -c "npm install && npx vite --host 0.0.0.0"
+    command: sh -c "npm install && npm run dev:docker"
     working_dir: /app
     volumes:
       - ./:/app

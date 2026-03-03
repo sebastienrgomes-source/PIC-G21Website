@@ -666,6 +666,18 @@ p {
   font: inherit;
 }
 
+.contact-form button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.contact-honeypot {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .contact-feedback {
   margin: 0.2rem 0 0;
   font-weight: 700;

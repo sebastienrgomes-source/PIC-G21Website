@@ -4,11 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-  "dev": "node ./node_modules/vite/bin/vite.js",
-  "build": "node ./node_modules/vite/bin/vite.js build",
-  "preview": "node ./node_modules/vite/bin/vite.js preview"
-},
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:api\"",
+    "dev:client": "node ./node_modules/vite/bin/vite.js",
+    "dev:api": "node server/contact-api.js",
+    "dev:docker": "concurrently \"npm run dev:client -- --host 0.0.0.0\" \"npm run dev:api\"",
+    "build": "node ./node_modules/vite/bin/vite.js build",
+    "preview": "node ./node_modules/vite/bin/vite.js preview"
+  },
   "dependencies": {
+    "concurrently": "^9.2.1",
+    "express": "^5.2.1",
+    "nodemailer": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

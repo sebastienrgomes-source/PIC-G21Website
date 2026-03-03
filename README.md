@@ -63,6 +63,27 @@ npm run build
 npm run preview
 ```
 
+## Configurar envio real do formulário de contacto (grátis)
+O formulário agora envia pelo backend local `/api/contact` (sem `mailto` e sem FormSubmit).
+
+1. Crie um ficheiro `.env` na raiz com base em `.env.example`.
+2. Preencha pelo menos:
+   - `TEAM_EMAILS` com os emails da equipa (separados por vírgula)
+   - `SMTP_USER` e `SMTP_PASS` (no Gmail usar App Password)
+3. Arranque o projeto com:
+
+```powershell
+npm run dev
+```
+
+Esse comando inicia:
+- frontend Vite em `http://localhost:5173`
+- API de contacto em `http://localhost:8787`
+
+Quando alguém submete o formulário:
+- a mensagem é enviada para `TEAM_EMAILS`
+- o remetente recebe cópia automática (acknowledgement), se `CONTACT_SEND_ACK=true`
+
 Via Docker (gera o `dist` no host):
 
 ```powershell

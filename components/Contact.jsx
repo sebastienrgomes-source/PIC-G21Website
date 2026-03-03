@@ -1,28 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useLanguage } from "../context/LanguageContext";
+
+const contactApiUrl = import.meta.env.VITE_CONTACT_API_URL ?? "/api/contact";
 
 export default function Contact() {
   const { language } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: "idle", message: "" });
-
-  const teamEmails = useMemo(() => {
-    const raw = import.meta.env.VITE_TEAM_EMAILS ?? "sebastien.r.gomes@tecnico.ulisboa.pt";
-    return raw
-      .split(",")
-      .map((email) => email.trim())
-      .filter(Boolean);
-  }, []);
-
-  const primaryEmail = teamEmails[0] ?? "sebastien.r.gomes@tecnico.ulisboa.pt";
-  const ccEmails = teamEmails.slice(1);
 
   const copy = {
     pt: {
       kicker: "Contacto",
       title: "Vamos Falar Sobre o Projeto",
-      intro: "Esta mensagem será enviada para a Equipa HeatSpot OFF-Grid.",
+      intro: "Esta mensagem é enviada para a Equipa HeatSpot OFF-Grid.",
       deliveryHint:
-        "Ao clicar em enviar, abre o teu cliente de email com os destinatários da equipa. Para concluir, tens de clicar em Enviar no teu email.",
+        "O envio é feito diretamente pelo servidor, sem abrir o teu cliente de email.",
       name: "Nome",
       email: "Email",
       message: "Mensagem",
@@ -30,22 +22,18 @@ export default function Contact() {
       emailPlaceholder: "teuemail@exemplo.com",
       messagePlaceholder: "Quero saber mais sobre o sistema...",
       submit: "Enviar Mensagem",
+      submitting: "A enviar...",
       success:
-        "Rascunho aberto no teu cliente de email. Depois de clicares em Enviar, vais receber cópia no email que preencheste.",
+        "Mensagem enviada para a equipa com sucesso. Também foi enviada cópia para o teu email.",
       error:
-        "Não foi possível abrir o cliente de email automaticamente. Envia manualmente para a equipa.",
-      subject: "Novo contacto | HeatSpot OFF-Grid",
-      bodyName: "Nome",
-      bodyEmail: "Email",
-      bodyMessage: "Mensagem",
-      bodyDate: "Data",
+        "Não foi possível enviar agora. Verifica a configuração do servidor de email e tenta novamente.",
     },
     en: {
       kicker: "Contact",
       title: "Let's Talk About the Project",
-      intro: "This message will be sent to the HeatSpot OFF-Grid team.",
+      intro: "This message is sent to the HeatSpot OFF-Grid team.",
       deliveryHint:
-        "When you click send, your email app opens with team recipients prefilled. To finish, you must click Send in your email app.",
+        "The message is sent directly by the server, without opening your email app.",
       name: "Name",
       email: "Email",
       message: "Message",
@@ -53,22 +41,18 @@ export default function Contact() {
       emailPlaceholder: "yourmail@example.com",
       messagePlaceholder: "I want to know more about the system...",
       submit: "Send Message",
+      submitting: "Sending...",
       success:
-        "Draft opened in your email app. After you click Send, you will receive a copy at the email you entered.",
+        "Message delivered to the team successfully. A copy was also sent to your email.",
       error:
-        "It was not possible to open your email app automatically. Please send manually to the team.",
-      subject: "New contact | HeatSpot OFF-Grid",
-      bodyName: "Name",
-      bodyEmail: "Email",
-      bodyMessage: "Message",
-      bodyDate: "Date",
+        "It was not possible to send right now. Check server email configuration and try again.",
     },
     fr: {
       kicker: "Contact",
       title: "Parlons du Projet",
-      intro: "Ce message sera envoyé à l'équipe HeatSpot OFF-Grid.",
+      intro: "Ce message est envoyé à l'équipe HeatSpot OFF-Grid.",
       deliveryHint:
-        "Quand vous cliquez sur envoyer, votre application email s'ouvre avec les destinataires de l'équipe. Pour finaliser, vous devez cliquer sur Envoyer dans votre application email.",
+        "L'envoi est réalisé directement par le serveur, sans ouvrir votre application email.",
       name: "Nom",
       email: "Email",
       message: "Message",
@@ -76,22 +60,18 @@ export default function Contact() {
       emailPlaceholder: "votremail@exemple.com",
       messagePlaceholder: "Je veux en savoir plus sur le système...",
       submit: "Envoyer le message",
+      submitting: "Envoi...",
       success:
-        "Brouillon ouvert dans votre application email. Après avoir cliqué sur Envoyer, vous recevrez une copie à l'email saisi.",
+        "Message envoyé à l'équipe avec succès. Une copie a aussi été envoyée à votre email.",
       error:
-        "Impossible d'ouvrir automatiquement votre application email. Veuillez envoyer manuellement à l'équipe.",
-      subject: "Nouveau contact | HeatSpot OFF-Grid",
-      bodyName: "Nom",
-      bodyEmail: "Email",
-      bodyMessage: "Message",
-      bodyDate: "Date",
+        "Envoi impossible pour le moment. Vérifiez la configuration email du serveur et réessayez.",
     },
     es: {
       kicker: "Contacto",
       title: "Hablemos del Proyecto",
-      intro: "Este mensaje será enviado al equipo HeatSpot OFF-Grid.",
+      intro: "Este mensaje se envía al equipo HeatSpot OFF-Grid.",
       deliveryHint:
-        "Al hacer clic en enviar, se abre tu app de email con los destinatarios del equipo. Para finalizar, debes pulsar Enviar en tu app de email.",
+        "El envío se realiza directamente por el servidor, sin abrir tu app de email.",
       name: "Nombre",
       email: "Email",
       message: "Mensaje",
@@ -99,59 +79,49 @@ export default function Contact() {
       emailPlaceholder: "tuemail@ejemplo.com",
       messagePlaceholder: "Quiero saber más sobre el sistema...",
       submit: "Enviar Mensaje",
+      submitting: "Enviando...",
       success:
-        "Borrador abierto en tu app de email. Después de pulsar Enviar, recibirás una copia en el email que escribiste.",
+        "Mensaje enviado al equipo con éxito. También se envió una copia a tu email.",
       error:
-        "No fue posible abrir tu aplicación de email automáticamente. Envíalo manualmente al equipo.",
-      subject: "Nuevo contacto | HeatSpot OFF-Grid",
-      bodyName: "Nombre",
-      bodyEmail: "Email",
-      bodyMessage: "Mensaje",
-      bodyDate: "Fecha",
+        "No fue posible enviar ahora. Revisa la configuración de email del servidor e inténtalo de nuevo.",
     },
   };
 
   const text = copy[language] ?? copy.pt;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setFeedback({ type: "idle", message: "" });
+    setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
-    const senderName = String(formData.get("name") ?? "").trim();
-    const senderEmail = String(formData.get("email") ?? "").trim();
-    const senderMessage = String(formData.get("message") ?? "").trim();
-    const timestamp = new Date().toISOString();
-
-    const body = [
-      `${text.bodyName}: ${senderName}`,
-      `${text.bodyEmail}: ${senderEmail}`,
-      "",
-      `${text.bodyMessage}:`,
-      senderMessage,
-      "",
-      `${text.bodyDate}: ${timestamp}`,
-    ].join("\n");
-
-    const params = new URLSearchParams();
-    const normalizedPrimary = primaryEmail.trim().toLowerCase();
-    const ccRecipients = [senderEmail, ...ccEmails]
-      .map((email) => email.trim())
-      .filter(Boolean)
-      .filter((email, index, list) => list.findIndex((item) => item.toLowerCase() === email.toLowerCase()) === index)
-      .filter((email) => email.toLowerCase() !== normalizedPrimary);
-
-    if (ccRecipients.length) {
-      params.set("cc", ccRecipients.join(","));
-    }
-    params.set("subject", text.subject);
-    params.set("body", body);
+    const payload = {
+      name: String(formData.get("name") ?? "").trim(),
+      email: String(formData.get("email") ?? "").trim(),
+      message: String(formData.get("message") ?? "").trim(),
+      website: String(formData.get("website") ?? "").trim(),
+      language,
+    };
 
     try {
-      window.location.href = `mailto:${primaryEmail}?${params.toString()}`;
-      setFeedback({ type: "info", message: text.success });
+      const response = await fetch(contactApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.ok && result?.ok) {
+        event.currentTarget.reset();
+        setFeedback({ type: "success", message: text.success });
+      } else {
+        setFeedback({ type: "error", message: text.error });
+      }
     } catch {
       setFeedback({ type: "error", message: text.error });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -166,6 +136,11 @@ export default function Contact() {
         </header>
 
         <form className="contact-form" onSubmit={handleSubmit}>
+          <label className="contact-honeypot" aria-hidden="true">
+            Website
+            <input type="text" name="website" tabIndex="-1" autoComplete="off" />
+          </label>
+
           <label>
             {text.name}
             <input
@@ -195,8 +170,8 @@ export default function Contact() {
               required
             />
           </label>
-          <button type="submit" className="btn btn-primary">
-            {text.submit}
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? text.submitting : text.submit}
           </button>
           {feedback.message ? (
             <p className={`contact-feedback contact-feedback-${feedback.type}`}>
