@@ -3,13 +3,14 @@ import { useLanguage } from "../context/LanguageContext";
 
 export default function Contact() {
   const { language } = useLanguage();
+  const targetEmail = "sebastien.r.gomes@tecnico.ulisboa.pt";
 
   const copy = {
     pt: {
       kicker: "Contacto",
       title: "Vamos Falar Sobre o Projeto",
       intro:
-        "Se quiseres, esta secção pode ser ligada a envio real por email ou Google Forms.",
+        `As mensagens deste formulário são enviadas para ${targetEmail}.`,
       name: "Nome",
       email: "Email",
       message: "Mensagem",
@@ -17,11 +18,12 @@ export default function Contact() {
       emailPlaceholder: "teuemail@exemplo.com",
       messagePlaceholder: "Quero saber mais sobre o sistema...",
       submit: "Enviar Mensagem",
+      subject: "Novo contacto | HeatSpot OFF-Grid",
     },
     en: {
       kicker: "Contact",
       title: "Let's Talk About the Project",
-      intro: "If you want, this section can be connected to real email delivery or Google Forms.",
+      intro: `Messages from this form are sent to ${targetEmail}.`,
       name: "Name",
       email: "Email",
       message: "Message",
@@ -29,12 +31,12 @@ export default function Contact() {
       emailPlaceholder: "yourmail@example.com",
       messagePlaceholder: "I want to know more about the system...",
       submit: "Send Message",
+      subject: "New contact | HeatSpot OFF-Grid",
     },
     fr: {
       kicker: "Contact",
       title: "Parlons du Projet",
-      intro:
-        "Si vous le souhaitez, cette section peut être connectée à un envoi réel par email ou Google Forms.",
+      intro: `Les messages de ce formulaire sont envoyés à ${targetEmail}.`,
       name: "Nom",
       email: "Email",
       message: "Message",
@@ -42,11 +44,12 @@ export default function Contact() {
       emailPlaceholder: "votremail@exemple.com",
       messagePlaceholder: "Je veux en savoir plus sur le système...",
       submit: "Envoyer le message",
+      subject: "Nouveau contact | HeatSpot OFF-Grid",
     },
     es: {
       kicker: "Contacto",
       title: "Hablemos del Proyecto",
-      intro: "Si quieres, esta sección puede conectarse a envío real por email o Google Forms.",
+      intro: `Los mensajes de este formulario se envían a ${targetEmail}.`,
       name: "Nombre",
       email: "Email",
       message: "Mensaje",
@@ -54,6 +57,7 @@ export default function Contact() {
       emailPlaceholder: "tuemail@ejemplo.com",
       messagePlaceholder: "Quiero saber más sobre el sistema...",
       submit: "Enviar Mensaje",
+      subject: "Nuevo contacto | HeatSpot OFF-Grid",
     },
   };
 
@@ -68,18 +72,42 @@ export default function Contact() {
           <p>{text.intro}</p>
         </header>
 
-        <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+        <form
+          className="contact-form"
+          action={`https://formsubmit.co/${targetEmail}`}
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value={text.subject} />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_template" value="table" />
           <label>
             {text.name}
-            <input type="text" placeholder={text.namePlaceholder} />
+            <input
+              type="text"
+              name="name"
+              placeholder={text.namePlaceholder}
+              autoComplete="name"
+              required
+            />
           </label>
           <label>
             {text.email}
-            <input type="email" placeholder={text.emailPlaceholder} />
+            <input
+              type="email"
+              name="email"
+              placeholder={text.emailPlaceholder}
+              autoComplete="email"
+              required
+            />
           </label>
           <label>
             {text.message}
-            <textarea rows="4" placeholder={text.messagePlaceholder} />
+            <textarea
+              rows="4"
+              name="message"
+              placeholder={text.messagePlaceholder}
+              required
+            />
           </label>
           <button type="submit" className="btn btn-primary">
             {text.submit}
