@@ -732,23 +732,30 @@ p {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.team-card:hover .team-photo,
-.team-card:focus-within .team-photo {
+.team-card.has-link:hover .team-photo,
+.team-card.has-link:focus-within .team-photo {
   filter: blur(2px) brightness(0.8);
   transform: scale(1.04);
 }
 
-.team-card:hover .team-link-overlay,
-.team-card:focus-within .team-link-overlay {
+.team-card.has-link:hover .team-link-overlay,
+.team-card.has-link:focus-within .team-link-overlay {
   opacity: 1;
   background: rgba(4, 18, 63, 0.3);
   backdrop-filter: blur(2px);
 }
 
-.team-card:hover .team-link-badge,
-.team-card:focus-within .team-link-badge {
+.team-card.has-link:hover .team-link-badge,
+.team-card.has-link:focus-within .team-link-badge {
   transform: translateY(0) scale(1);
   box-shadow: 0 12px 28px rgba(10, 102, 194, 0.46);
+}
+
+.team-link-soon {
+  margin-top: 0.45rem;
+  color: #66759a;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .team-name {

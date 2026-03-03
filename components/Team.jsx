@@ -25,6 +25,11 @@ const baseMembers = [
     image: new URL("../Sébastien.jpeg", import.meta.url).href,
     linkedin: "https://www.linkedin.com/in/s%C3%A9bastien-gomes-8886973a3/",
   },
+  {
+    name: "Vasco",
+    image: new URL("../Vasco.jpeg", import.meta.url).href,
+    linkedin: null,
+  },
 ];
 
 export default function Team() {
@@ -37,11 +42,13 @@ export default function Team() {
       intro:
         "Projeto académico focado em engenharia aplicada, sustentabilidade e proteção de infraestruturas críticas.",
       linkedinLabelPrefix: "Abrir LinkedIn de",
+      linkedinSoon: "LinkedIn em breve",
       roles: {
         Joel: "Coordenação e planeamento",
         Leonel: "Eletrónica e prototipagem",
         Nicollas: "Integração de sistema",
         "Sébastien": "Software e comunicação",
+        Vasco: "Integração e suporte técnico",
       },
     },
     en: {
@@ -50,11 +57,13 @@ export default function Team() {
       intro:
         "Academic project focused on applied engineering, sustainability, and protection of critical infrastructure.",
       linkedinLabelPrefix: "Open LinkedIn profile of",
+      linkedinSoon: "LinkedIn coming soon",
       roles: {
         Joel: "Coordination and planning",
         Leonel: "Electronics and prototyping",
         Nicollas: "System integration",
         "Sébastien": "Software and communication",
+        Vasco: "Integration and technical support",
       },
     },
     fr: {
@@ -63,11 +72,13 @@ export default function Team() {
       intro:
         "Projet académique axé sur l'ingénierie appliquée, la durabilité et la protection des infrastructures critiques.",
       linkedinLabelPrefix: "Ouvrir le LinkedIn de",
+      linkedinSoon: "LinkedIn bientôt disponible",
       roles: {
         Joel: "Coordination et planification",
         Leonel: "Électronique et prototypage",
         Nicollas: "Intégration système",
         "Sébastien": "Logiciel et communication",
+        Vasco: "Intégration et support technique",
       },
     },
     es: {
@@ -76,11 +87,13 @@ export default function Team() {
       intro:
         "Proyecto académico centrado en ingeniería aplicada, sostenibilidad y protección de infraestructuras críticas.",
       linkedinLabelPrefix: "Abrir LinkedIn de",
+      linkedinSoon: "LinkedIn próximamente",
       roles: {
         Joel: "Coordinación y planificación",
         Leonel: "Electrónica y prototipado",
         Nicollas: "Integración de sistemas",
         "Sébastien": "Software y comunicación",
+        Vasco: "Integración y soporte técnico",
       },
     },
   };
@@ -103,24 +116,34 @@ export default function Team() {
 
         <div className="team-grid">
           {teamMembers.map((member) => (
-            <article key={member.name} className="team-card">
+            <article
+              key={member.name}
+              className={`team-card${member.linkedin ? " has-link" : ""}`}
+            >
               <div className="team-photo-wrap">
                 <img src={member.image} alt={member.name} className="team-photo" />
-                <a
-                  className="team-link-overlay"
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${text.linkedinLabelPrefix} ${member.name}`}
-                >
-                  <span className="team-link-badge" aria-hidden="true">
-                    in
-                  </span>
-                  <span className="sr-only">{`${text.linkedinLabelPrefix} ${member.name}`}</span>
-                </a>
+                {member.linkedin ? (
+                  <a
+                    className="team-link-overlay"
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${text.linkedinLabelPrefix} ${member.name}`}
+                  >
+                    <span className="team-link-badge" aria-hidden="true">
+                      in
+                    </span>
+                    <span className="sr-only">{`${text.linkedinLabelPrefix} ${member.name}`}</span>
+                  </a>
+                ) : null}
               </div>
               <h3 className="team-name">{member.name}</h3>
               <p className="team-role">{member.role}</p>
+              {!member.linkedin ? (
+                <p className="team-link-soon" aria-label={text.linkedinSoon}>
+                  {text.linkedinSoon}
+                </p>
+              ) : null}
             </article>
           ))}
         </div>
