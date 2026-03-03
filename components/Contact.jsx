@@ -3,7 +3,9 @@ import { useLanguage } from "../context/LanguageContext";
 
 export default function Contact() {
   const { language } = useLanguage();
-  const targetEmail = "sebastien.r.gomes@tecnico.ulisboa.pt";
+  const teamInboxTopic =
+    import.meta.env.VITE_TEAM_INBOX_TOPIC ?? "heatspot-offgrid-g21-contact-3f6k9m2q8v";
+  const teamInboxUrl = `https://ntfy.sh/${teamInboxTopic}`;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ type: "idle", message: "" });
 
@@ -11,7 +13,7 @@ export default function Contact() {
     pt: {
       kicker: "Contacto",
       title: "Vamos Falar Sobre o Projeto",
-      intro: "As mensagens deste formulário são enviadas para a Equipa HeatSpot OFF-Grid.",
+      intro: "As mensagens deste formulário são partilhadas com a Equipa HeatSpot OFF-Grid.",
       name: "Nome",
       email: "Email",
       message: "Mensagem",
@@ -21,15 +23,13 @@ export default function Contact() {
       submit: "Enviar Mensagem",
       submitting: "A enviar...",
       success: "Mensagem enviada com sucesso. Obrigado pelo contacto!",
-      activationNeeded:
-        "O formulário está em ativação. A equipa precisa de confirmar o link de ativação uma única vez.",
       error: "Não foi possível enviar agora. Tenta novamente daqui a pouco.",
-      subject: "Novo contacto | HeatSpot OFF-Grid",
+      subject: "Novo contacto",
     },
     en: {
       kicker: "Contact",
       title: "Let's Talk About the Project",
-      intro: "Messages from this form are sent to the HeatSpot OFF-Grid team.",
+      intro: "Messages from this form are shared with the HeatSpot OFF-Grid team.",
       name: "Name",
       email: "Email",
       message: "Message",
@@ -39,15 +39,13 @@ export default function Contact() {
       submit: "Send Message",
       submitting: "Sending...",
       success: "Message sent successfully. Thank you for reaching out!",
-      activationNeeded:
-        "The form is pending activation. The team must confirm the activation link a single time.",
       error: "It was not possible to send right now. Please try again shortly.",
-      subject: "New contact | HeatSpot OFF-Grid",
+      subject: "New contact",
     },
     fr: {
       kicker: "Contact",
       title: "Parlons du Projet",
-      intro: "Les messages de ce formulaire sont envoyés à l'équipe HeatSpot OFF-Grid.",
+      intro: "Les messages de ce formulaire sont partagés avec l'équipe HeatSpot OFF-Grid.",
       name: "Nom",
       email: "Email",
       message: "Message",
@@ -57,15 +55,13 @@ export default function Contact() {
       submit: "Envoyer le message",
       submitting: "Envoi...",
       success: "Message envoyé avec succès. Merci pour votre contact !",
-      activationNeeded:
-        "Le formulaire est en cours d'activation. L'équipe doit confirmer le lien une seule fois.",
       error: "Envoi impossible pour le moment. Veuillez réessayer plus tard.",
-      subject: "Nouveau contact | HeatSpot OFF-Grid",
+      subject: "Nouveau contact",
     },
     es: {
       kicker: "Contacto",
       title: "Hablemos del Proyecto",
-      intro: "Los mensajes de este formulario se envían al equipo HeatSpot OFF-Grid.",
+      intro: "Los mensajes de este formulario se comparten con el equipo HeatSpot OFF-Grid.",
       name: "Nombre",
       email: "Email",
       message: "Mensaje",
@@ -75,10 +71,8 @@ export default function Contact() {
       submit: "Enviar Mensaje",
       submitting: "Enviando...",
       success: "Mensaje enviado con éxito. ¡Gracias por contactarnos!",
-      activationNeeded:
-        "El formulario está pendiente de activación. El equipo debe confirmar el enlace una sola vez.",
       error: "No fue posible enviar ahora. Inténtalo de nuevo en unos minutos.",
-      subject: "Nuevo contacto | HeatSpot OFF-Grid",
+      subject: "Nuevo contacto",
     },
   };
 
@@ -90,39 +84,31 @@ export default function Contact() {
     setFeedback({ type: "idle", message: "" });
 
     const formData = new FormData(event.currentTarget);
-    formData.append("_subject", text.subject);
-    formData.append("_captcha", "false");
-    formData.append("_template", "table");
+    const senderName = String(formData.get("name") ?? "").trim();
+    const senderEmail = String(formData.get("email") ?? "").trim();
+    const senderMessage = String(formData.get("message") ?? "").trim();
+    const timestamp = new Date().toISOString();
+    const payload = [
+      `HeatSpot OFF-Grid | ${text.subject}`,
+      `Nome/Name: ${senderName}`,
+      `Email: ${senderEmail}`,
+      `Mensagem/Message: ${senderMessage}`,
+      `Data/Date: ${timestamp}`,
+    ].join("\n");
 
     try {
-      const response = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
+      const response = await fetch(teamInboxUrl, {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
+        body: payload,
       });
 
-      const result = await response.json().catch(() => ({}));
-      const serviceMessage = String(result?.message ?? "").toLowerCase();
-      const activationPattern =
-        /activat|activation|confirm|verify|inbox|check your email|email link/;
-      const resultSuccess =
-        result?.success === true ||
-        result?.success === "true" ||
-        serviceMessage.includes("success");
-
-      if (response.ok && resultSuccess) {
+      if (response.ok) {
         event.currentTarget.reset();
         setFeedback({ type: "success", message: text.success });
         return;
       }
 
-      if (activationPattern.test(serviceMessage)) {
-        setFeedback({ type: "error", message: text.activationNeeded });
-      } else {
-        setFeedback({ type: "error", message: text.error });
-      }
+      setFeedback({ type: "error", message: text.error });
     } catch {
       setFeedback({ type: "error", message: text.error });
     } finally {
