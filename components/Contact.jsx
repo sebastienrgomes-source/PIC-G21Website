@@ -31,7 +31,7 @@ export default function Contact() {
       messagePlaceholder: "Quero saber mais sobre o sistema...",
       submit: "Enviar Mensagem",
       success:
-        "Cliente de email aberto. A mensagem só é enviada depois de confirmares no teu email.",
+        "Rascunho aberto no teu cliente de email. Depois de clicares em Enviar, vais receber cópia no email que preencheste.",
       error:
         "Não foi possível abrir o cliente de email automaticamente. Envia manualmente para a equipa.",
       subject: "Novo contacto | HeatSpot OFF-Grid",
@@ -54,7 +54,7 @@ export default function Contact() {
       messagePlaceholder: "I want to know more about the system...",
       submit: "Send Message",
       success:
-        "Email app opened. The message is only sent after you confirm in your email app.",
+        "Draft opened in your email app. After you click Send, you will receive a copy at the email you entered.",
       error:
         "It was not possible to open your email app automatically. Please send manually to the team.",
       subject: "New contact | HeatSpot OFF-Grid",
@@ -77,7 +77,7 @@ export default function Contact() {
       messagePlaceholder: "Je veux en savoir plus sur le système...",
       submit: "Envoyer le message",
       success:
-        "Application email ouverte. Le message est envoyé uniquement après votre confirmation.",
+        "Brouillon ouvert dans votre application email. Après avoir cliqué sur Envoyer, vous recevrez une copie à l'email saisi.",
       error:
         "Impossible d'ouvrir automatiquement votre application email. Veuillez envoyer manuellement à l'équipe.",
       subject: "Nouveau contact | HeatSpot OFF-Grid",
@@ -100,7 +100,7 @@ export default function Contact() {
       messagePlaceholder: "Quiero saber más sobre el sistema...",
       submit: "Enviar Mensaje",
       success:
-        "Aplicación de email abierta. El mensaje solo se envía después de tu confirmación.",
+        "Borrador abierto en tu app de email. Después de pulsar Enviar, recibirás una copia en el email que escribiste.",
       error:
         "No fue posible abrir tu aplicación de email automáticamente. Envíalo manualmente al equipo.",
       subject: "Nuevo contacto | HeatSpot OFF-Grid",
@@ -134,8 +134,15 @@ export default function Contact() {
     ].join("\n");
 
     const params = new URLSearchParams();
-    if (ccEmails.length) {
-      params.set("cc", ccEmails.join(","));
+    const normalizedPrimary = primaryEmail.trim().toLowerCase();
+    const ccRecipients = [senderEmail, ...ccEmails]
+      .map((email) => email.trim())
+      .filter(Boolean)
+      .filter((email, index, list) => list.findIndex((item) => item.toLowerCase() === email.toLowerCase()) === index)
+      .filter((email) => email.toLowerCase() !== normalizedPrimary);
+
+    if (ccRecipients.length) {
+      params.set("cc", ccRecipients.join(","));
     }
     params.set("subject", text.subject);
     params.set("body", body);
