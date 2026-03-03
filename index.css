@@ -682,6 +682,7 @@ p {
 }
 
 .team-photo-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
@@ -695,6 +696,59 @@ p {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.team-link-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  background: rgba(4, 18, 63, 0.16);
+  opacity: 0;
+  transition: opacity 0.25s ease, background 0.25s ease, backdrop-filter 0.25s ease;
+}
+
+.team-link-overlay:focus-visible {
+  opacity: 1;
+  outline: 2px solid #ffb11a;
+  outline-offset: -2px;
+}
+
+.team-link-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 3.05rem;
+  height: 3.05rem;
+  border-radius: 999px;
+  background: #0a66c2;
+  color: #ffffff;
+  font-family: "Sora", sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  box-shadow: 0 10px 24px rgba(10, 102, 194, 0.35);
+  transform: translateY(8px) scale(0.92);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.team-card:hover .team-photo,
+.team-card:focus-within .team-photo {
+  filter: blur(2px) brightness(0.8);
+  transform: scale(1.04);
+}
+
+.team-card:hover .team-link-overlay,
+.team-card:focus-within .team-link-overlay {
+  opacity: 1;
+  background: rgba(4, 18, 63, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+.team-card:hover .team-link-badge,
+.team-card:focus-within .team-link-badge {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 12px 28px rgba(10, 102, 194, 0.46);
 }
 
 .team-name {
