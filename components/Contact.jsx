@@ -11,8 +11,7 @@ export default function Contact() {
     pt: {
       kicker: "Contacto",
       title: "Vamos Falar Sobre o Projeto",
-      intro:
-        `As mensagens deste formulário são enviadas para ${targetEmail}.`,
+      intro: "As mensagens deste formulário são enviadas para a Equipa HeatSpot OFF-Grid.",
       name: "Nome",
       email: "Email",
       message: "Mensagem",
@@ -23,14 +22,14 @@ export default function Contact() {
       submitting: "A enviar...",
       success: "Mensagem enviada com sucesso. Obrigado pelo contacto!",
       activationNeeded:
-        "Formulário ainda não ativado. Só o dono do email precisa de clicar no link de ativação uma única vez.",
+        "O formulário está em ativação. A equipa precisa de confirmar o link de ativação uma única vez.",
       error: "Não foi possível enviar agora. Tenta novamente daqui a pouco.",
       subject: "Novo contacto | HeatSpot OFF-Grid",
     },
     en: {
       kicker: "Contact",
       title: "Let's Talk About the Project",
-      intro: `Messages from this form are sent to ${targetEmail}.`,
+      intro: "Messages from this form are sent to the HeatSpot OFF-Grid team.",
       name: "Name",
       email: "Email",
       message: "Message",
@@ -41,14 +40,14 @@ export default function Contact() {
       submitting: "Sending...",
       success: "Message sent successfully. Thank you for reaching out!",
       activationNeeded:
-        "Form not activated yet. Only the email owner must click the activation link one single time.",
+        "The form is pending activation. The team must confirm the activation link a single time.",
       error: "It was not possible to send right now. Please try again shortly.",
       subject: "New contact | HeatSpot OFF-Grid",
     },
     fr: {
       kicker: "Contact",
       title: "Parlons du Projet",
-      intro: `Les messages de ce formulaire sont envoyés à ${targetEmail}.`,
+      intro: "Les messages de ce formulaire sont envoyés à l'équipe HeatSpot OFF-Grid.",
       name: "Nom",
       email: "Email",
       message: "Message",
@@ -59,14 +58,14 @@ export default function Contact() {
       submitting: "Envoi...",
       success: "Message envoyé avec succès. Merci pour votre contact !",
       activationNeeded:
-        "Formulaire pas encore activé. Seul le propriétaire de l'email doit cliquer une seule fois sur le lien d'activation.",
+        "Le formulaire est en cours d'activation. L'équipe doit confirmer le lien une seule fois.",
       error: "Envoi impossible pour le moment. Veuillez réessayer plus tard.",
       subject: "Nouveau contact | HeatSpot OFF-Grid",
     },
     es: {
       kicker: "Contacto",
       title: "Hablemos del Proyecto",
-      intro: `Los mensajes de este formulario se envían a ${targetEmail}.`,
+      intro: "Los mensajes de este formulario se envían al equipo HeatSpot OFF-Grid.",
       name: "Nombre",
       email: "Email",
       message: "Mensaje",
@@ -77,7 +76,7 @@ export default function Contact() {
       submitting: "Enviando...",
       success: "Mensaje enviado con éxito. ¡Gracias por contactarnos!",
       activationNeeded:
-        "Formulario todavía no activado. Solo el propietario del email debe hacer clic una única vez en el enlace de activación.",
+        "El formulario está pendiente de activación. El equipo debe confirmar el enlace una sola vez.",
       error: "No fue posible enviar ahora. Inténtalo de nuevo en unos minutos.",
       subject: "Nuevo contacto | HeatSpot OFF-Grid",
     },
@@ -106,14 +105,20 @@ export default function Contact() {
 
       const result = await response.json().catch(() => ({}));
       const serviceMessage = String(result?.message ?? "").toLowerCase();
+      const activationPattern =
+        /activat|activation|confirm|verify|inbox|check your email|email link/;
+      const resultSuccess =
+        result?.success === true ||
+        result?.success === "true" ||
+        serviceMessage.includes("success");
 
-      if (response.ok) {
+      if (response.ok && resultSuccess) {
         event.currentTarget.reset();
         setFeedback({ type: "success", message: text.success });
         return;
       }
 
-      if (serviceMessage.includes("activate")) {
+      if (activationPattern.test(serviceMessage)) {
         setFeedback({ type: "error", message: text.activationNeeded });
       } else {
         setFeedback({ type: "error", message: text.error });
