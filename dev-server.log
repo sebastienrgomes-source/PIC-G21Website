@@ -1,0 +1,44 @@
+
+> pic-g21@0.0.0 dev
+> concurrently "npm run dev:client" "npm run dev:api"
+
+[0] npm warn config production Use `--omit=dev` instead.
+[1] npm warn config production Use `--omit=dev` instead.
+[0] 
+[0] > pic-g21@0.0.0 dev:client
+[0] > node ./node_modules/vite/bin/vite.js
+[0] 
+[1] 
+[1] > pic-g21@0.0.0 dev:api
+[1] > node server/contact-api.js
+[1] 
+[1] [contact-api] SMTP_USER / SMTP_PASS não configurados. O endpoint vai responder erro até configurar as credenciais.
+[1] [contact-api] A correr em http://localhost:8787
+[1] [contact-api] SuperbaseData em: c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\superbasedata
+[0] 
+[0]   [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m856[22m[2m[0m ms[22m
+[0] 
+[0]   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[0] [2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[1] SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+[1]     at JSON.parse (<anonymous>)
+[1]     at parse (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\body-parser\lib\types\json.js:72:19)
+[1]     at c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\body-parser\lib\read.js:162:18
+[1]     at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+[1]     at invokeCallback (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:238:16)
+[1]     at done (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:227:7)
+[1]     at IncomingMessage.onEnd (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:287:7)
+[1]     at IncomingMessage.emit (node:events:508:28)
+[1]     at endReadableNT (node:internal/streams/readable:1701:12)
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+[1] SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+[1]     at JSON.parse (<anonymous>)
+[1]     at parse (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\body-parser\lib\types\json.js:72:19)
+[1]     at c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\body-parser\lib\read.js:162:18
+[1]     at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+[1]     at invokeCallback (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:238:16)
+[1]     at done (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:227:7)
+[1]     at IncomingMessage.onEnd (c:\Users\sebas\OneDrive\Ambiente de Trabalho\IST\PIC-G21_Teste\PIC-G21\node_modules\raw-body\index.js:287:7)
+[1]     at IncomingMessage.emit (node:events:508:28)
+[1]     at endReadableNT (node:internal/streams/readable:1701:12)
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
