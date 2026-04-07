@@ -1,3 +1,19 @@
+// ─── INSTRUCCIONES DE PERSONALIZACIÓN ────────────────────────────────────
+//
+// IMAGEN DEL PROTOTIPO (paso 2 — Hardware):
+//   1. Coloca la imagen en src/marketing/assets/prototype-idea.png
+//   2. Descomenta el import de abajo
+//   3. Sustituye `prototypeImage: null` por `prototypeImage: prototypeIdea`
+//
+// import prototypeIdea from "../assets/prototype-idea.png";
+//
+// LOGOS DE LAS EMPRESAS (pasos 3 y 4):
+//   1. Coloca cada logo en src/marketing/assets/logos/
+//   2. Importa cada uno (ejemplo): import company1Logo from "../assets/logos/company1.png";
+//   3. Sustituye el `logo: null` correspondiente por el import
+//
+// ──────────────────────────────────────────────────────────────────────────
+
 export const roadmapEsMilestones = [
   {
     id: "requirements",
@@ -22,6 +38,8 @@ export const roadmapEsMilestones = [
     phaseLabel: "Planificado",
     phaseTone: "planned",
     current: false,
+    // TODO: reemplazar null con el import de la imagen del prototipo (ver instrucciones arriba)
+    prototypeImage: null,
     details: [
       "Diseño eléctrico para integrar panel, batería y controlador.",
       "Montaje mecánico de la carcasa y el módulo de calefacción.",
@@ -30,8 +48,76 @@ export const roadmapEsMilestones = [
     partners: ["Equipo HeatSpot", "Laboratorio de Electrónica"],
   },
   {
-    id: "firmware",
+    id: "companies-contacted",
     step: "3",
+    title: "Empresas Contactadas",
+    subtitle: "Contactos y retroalimentación del sector",
+    phaseLabel: "Completado",
+    phaseTone: "done",
+    current: false,
+    details: [
+      "5 empresas contactadas para validación inicial del concepto.",
+      "Recopilación de retroalimentación técnica y comercial del sector agro-industrial.",
+      "Identificación de necesidades reales e interés comercial en la solución.",
+    ],
+    partners: ["Equipo HeatSpot", "Sector Agro-industrial"],
+    companies: [
+      {
+        name: "company1Name",
+        logo: null,
+        feedback: "company1Feedback",
+        interactionType: "Retroalimentación por email",
+      },
+      {
+        name: "company2Name",
+        logo: null,
+        feedback: "company2Feedback",
+        interactionType: "Retroalimentación por email",
+      },
+      {
+        name: "company3Name",
+        logo: null,
+        feedback: "company3Feedback",
+        interactionType: "Retroalimentación por email",
+      },
+      {
+        name: "company4Name",
+        logo: null,
+        feedback: "company4Feedback",
+        interactionType: "Retroalimentación por email",
+      },
+      {
+        name: "company5Name",
+        logo: null,
+        feedback: "company5Feedback",
+        interactionType: "Retroalimentación por email",
+      },
+    ],
+  },
+  {
+    id: "zoom-meeting",
+    step: "4",
+    title: "Reunión Zoom",
+    subtitle: "The Summer Berry Company Portugal, S.A.",
+    phaseLabel: "Completado",
+    phaseTone: "done",
+    current: false,
+    details: [
+      "Sesión de validación directa con empresa del sector agro-industrial.",
+      "Discusión sobre aplicación práctica y necesidades reales en campo.",
+      "Evaluación de la relevancia y adecuación de la solución HeatSpot.",
+    ],
+    partners: ["Equipo HeatSpot", "The Summer Berry Company Portugal, S.A."],
+    zoomCompany: {
+      name: "The Summer Berry Company Portugal, S.A.",
+      logo: null,
+      feedback: "summerBerryFeedback",
+      interactionType: "Reunión via Zoom",
+    },
+  },
+  {
+    id: "firmware",
+    step: "5",
     title: "Firmware",
     subtitle: "Desarrollo embebido",
     phaseLabel: "Planificado",
@@ -46,7 +132,7 @@ export const roadmapEsMilestones = [
   },
   {
     id: "module-testing",
-    step: "4",
+    step: "6",
     title: "Pruebas Modulares",
     subtitle: "Validación por componente",
     phaseLabel: "Planificado",
@@ -61,7 +147,7 @@ export const roadmapEsMilestones = [
   },
   {
     id: "system-validation",
-    step: "5",
+    step: "7",
     title: "Validación del Sistema",
     subtitle: "Prueba integrada",
     phaseLabel: "Planificado",
@@ -76,7 +162,7 @@ export const roadmapEsMilestones = [
   },
   {
     id: "electroday",
-    step: "6",
+    step: "8",
     title: "ElectroDay",
     subtitle: "Demostración final del prototipo",
     phaseLabel: "Planificado",

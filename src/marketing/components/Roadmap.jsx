@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useLanguage } from "../context/LanguageContext";
 import { roadmapPtMilestones } from "../data/roadmap.pt";
 import { roadmapEnMilestones } from "../data/roadmap.en";
 import { roadmapFrMilestones } from "../data/roadmap.fr";
 import { roadmapEsMilestones } from "../data/roadmap.es";
+import CompanyFeedbackModal from "./CompanyFeedbackModal";
+import prototypeImg from "../../../Ideia de Protótipo.png";
+import summerBerryLogo from "./summer-berry-company.png";
 
 export default function Roadmap() {
   const { language } = useLanguage();
   const [selectedId, setSelectedId] = useState(null);
+  const [modalCompany, setModalCompany] = useState(null);
 
   const copy = {
     pt: {
@@ -69,6 +73,8 @@ export default function Roadmap() {
   const selectedMilestone =
     milestones.find((milestone) => milestone.id === selectedId) ?? null;
 
+  const closeModal = useCallback(() => setModalCompany(null), []);
+
   return (
     <section id="roadmap" className="section roadmap-execution">
       <div className="container">
@@ -84,13 +90,10 @@ export default function Roadmap() {
           {milestones.map((milestone, index) => {
             const isActive = selectedId === milestone.id;
             const sideClass = index % 2 === 0 ? "left" : "right";
-
             return (
               <article
                 key={milestone.id}
-                className={`execution-step ${sideClass}${
-                  isActive ? " is-active" : ""
-                }${milestone.current ? " is-current" : ""}`}
+                className={`execution-step ${sideClass}${isActive ? " is-active" : ""}${milestone.current ? " is-current" : ""}`}
                 role="listitem"
               >
                 <div className="execution-step-body">
@@ -99,6 +102,7 @@ export default function Roadmap() {
                   {milestone.current ? (
                     <span className="execution-current-badge">{text.currentBadge}</span>
                   ) : null}
+
                 </div>
 
                 <button
@@ -114,6 +118,8 @@ export default function Roadmap() {
                 >
                   <span>{milestone.step}</span>
                 </button>
+
+
               </article>
             );
           })}
@@ -134,33 +140,120 @@ export default function Roadmap() {
                 </p>
               </div>
 
-              <div className="execution-detail-grid">
-                <div>
-                  <h4>{text.workItemsTitle}</h4>
-                  <ul>
-                    {selectedMilestone.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h4>{text.partnersTitle}</h4>
-                  <div className="execution-tags">
-                    {selectedMilestone.partners.map((partner) => (
-                      <span key={partner} className="execution-tag">
-                        {partner}
-                      </span>
-                    ))}
+              {selectedMilestone.id === "hardware" ? (
+                /* Hardware: texto à esquerda, imagem à direita */
+                <div className="execution-hardware-grid">
+                  <div>
+                    <h4>{text.workItemsTitle}</h4>
+                    <ul>
+                      {selectedMilestone.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                    <h4 style={{ marginTop: "1rem" }}>{text.partnersTitle}</h4>
+                    <div className="execution-tags">
+                      {selectedMilestone.partners.map((partner) => (
+                        <span key={partner} className="execution-tag">
+                          {partner}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="prototype-preview">
+                    <img
+                      src={prototypeImg}
+                      alt="Ideia de Protótipo"
+                      className="prototype-preview-img"
+                    />
                   </div>
                 </div>
-              </div>
+              ) : selectedMilestone.zoomCompany ? (
+                /* Zoom meeting: só o card da empresa, clicável para abrir modal */
+                <div className="execution-zoom-detail">
+                  <button
+                    type="button"
+                    className="zoom-company-card"
+                    onClick={() => setModalCompany(selectedMilestone.zoomCompany)}
+                    aria-label={`Ver feedback de ${selectedMilestone.zoomCompany.name}`}
+                  >
+                    <img
+                      src={selectedMilestone.zoomCompany.logo ?? summerBerryLogo}
+                      alt={`Logo ${selectedMilestone.zoomCompany.name}`}
+                      className="zoom-company-logo-img"
+                    />
+                    <div className="zoom-company-info">
+                      <span className="zoom-badge">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z" />
+                        </svg>
+                        {selectedMilestone.zoomCompany.interactionType ?? "Zoom Meeting"}
+                      </span>
+                      <span className="zoom-company-name">{selectedMilestone.zoomCompany.name}</span>
+                    </div>
+                  </button>
+                </div>
+              ) : selectedMilestone.companies ? (
+                /* Empresas contactadas: logos clicáveis para abrir modal de feedback */
+                <div className="execution-step-companies">
+                  {selectedMilestone.companies.map((company) => (
+                    <button
+                      key={company.name}
+                      type="button"
+                      className="company-logo-slot"
+                      onClick={() => setModalCompany(company)}
+                      aria-label={`Ver feedback de ${company.name}`}
+                      title={company.name}
+                    >
+                      {company.logo ? (
+                        <img
+                          src={company.logo}
+                          alt={`Logo ${company.name}`}
+                          className="company-logo-img"
+                        />
+                      ) : (
+                        <div className="company-logo-fallback" aria-hidden="true">
+                          <span>{company.name.slice(0, 2)}</span>
+                        </div>
+                      )}
+                      <span className="company-logo-name">{company.name}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                /* Milestones normais: tarefas + entidades */
+                <div className="execution-detail-grid">
+                  <div>
+                    <h4>{text.workItemsTitle}</h4>
+                    <ul>
+                      {selectedMilestone.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4>{text.partnersTitle}</h4>
+                    <div className="execution-tags">
+                      {selectedMilestone.partners.map((partner) => (
+                        <span key={partner} className="execution-tag">
+                          {partner}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <p className="execution-detail-empty">{text.emptyMessage}</p>
           )}
         </div>
       </div>
+
+      {/* Company / Zoom feedback modal */}
+      {modalCompany ? (
+        <CompanyFeedbackModal company={modalCompany} onClose={closeModal} />
+      ) : null}
     </section>
   );
 }

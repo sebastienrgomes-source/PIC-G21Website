@@ -3,12 +3,6 @@ import { useLanguage } from "../context/LanguageContext";
 
 const baseMembers = [
   {
-    name: "Joel",
-    image: new URL("../Joel.jpeg", import.meta.url).href,
-    linkedin:
-      "https://www.linkedin.com/in/joel-d-65bbb219b?utm_source=share_via&utm_content=profile&utm_medium=member_ios",
-  },
-  {
     name: "Leonel",
     image: new URL("../Leonel .jpeg", import.meta.url).href,
     linkedin:
@@ -53,7 +47,7 @@ export default function Team() {
         "Sébastien": "Project Manager and Communication",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
-        Joel: "Thermal/Mechanical (Heater placement + enclosure + sensores)",
+
         Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
@@ -69,7 +63,7 @@ export default function Team() {
         "Sébastien": "Project Manager and Communication",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
-        Joel: "Thermal/Mechanical (Heater placement + enclosure + sensores)",
+
         Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
@@ -85,7 +79,7 @@ export default function Team() {
         "Sébastien": "Project Manager and Communication",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
-        Joel: "Thermal/Mechanical (Heater placement + enclosure + sensores)",
+
         Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
@@ -101,7 +95,7 @@ export default function Team() {
         "Sébastien": "Project Manager and Communication",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
-        Joel: "Thermal/Mechanical (Heater placement + enclosure + sensores)",
+
         Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
@@ -130,6 +124,15 @@ export default function Team() {
               key={member.name}
               className={`team-card${member.linkedin ? " has-link" : ""}`}
             >
+              <div className="team-card-body">
+                <h3 className="team-name">{member.name}</h3>
+                <p className="team-role">{member.role}</p>
+                {!member.linkedin ? (
+                  <p className="team-link-soon" aria-label={text.linkedinSoon}>
+                    {text.linkedinSoon}
+                  </p>
+                ) : null}
+              </div>
               <div className="team-photo-wrap">
                 <img src={member.image} alt={member.name} className="team-photo" />
                 {member.linkedin ? (
@@ -147,13 +150,6 @@ export default function Team() {
                   </a>
                 ) : null}
               </div>
-              <h3 className="team-name">{member.name}</h3>
-              <p className="team-role">{member.role}</p>
-              {!member.linkedin ? (
-                <p className="team-link-soon" aria-label={text.linkedinSoon}>
-                  {text.linkedinSoon}
-                </p>
-              ) : null}
             </article>
           ))}
         </div>
