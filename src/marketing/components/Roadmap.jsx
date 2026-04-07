@@ -6,7 +6,7 @@ import { roadmapFrMilestones } from "../data/roadmap.fr";
 import { roadmapEsMilestones } from "../data/roadmap.es";
 import CompanyFeedbackModal from "./CompanyFeedbackModal";
 import prototypeImg from "../../../Ideia de Protótipo.png";
-import summerBerryLogo from "./summer-berry-company.png";
+import summerBerryLogo from "./Summer-berry-company.png";
 
 export default function Roadmap() {
   const { language } = useLanguage();
