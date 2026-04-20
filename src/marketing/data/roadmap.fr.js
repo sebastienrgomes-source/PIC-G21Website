@@ -55,13 +55,18 @@ export const roadmapFrMilestones = [
     phaseLabel: "Terminé",
     phaseTone: "done",
     current: false,
-    summary: [
-      "Au cours d'une phase initiale du projet, un effort de contact a été réalisé auprès d'entreprises potentiellement intéressées par la solution développée par l'équipe, dans le but de valider la pertinence du produit et de mieux comprendre les exigences du marché.",
-      "Plusieurs secteurs pertinents ont été identifiés, avec un accent particulier sur l'agriculture, notamment la production en serre et l'apiculture. Au total, plus de 50 entreprises ont été contactées, dont des producteurs de différentes cultures (comme les fraises, tomates et autres cultures en serre) et des apiculteurs.",
-      "De cet ensemble, seules 5 entreprises ont répondu en manifestant leur disponibilité à analyser la proposition. Cependant, la majorité a indiqué ne pas avoir de besoin direct pour la solution, soit parce qu'elles opèrent dans des serres ouvertes, disposent déjà de systèmes de contrôle thermique adéquats, ou ne considèrent pas le problème comme critique dans leur contexte spécifique.",
-      "Malgré cela, deux entreprises se sont distinguées par leur intérêt pour le concept, notamment pour des applications à plus grande échelle. Ces interactions ont été particulièrement précieuses car elles ont permis de recueillir des retours techniques importants. Il a notamment été suggéré qu'une approche plus adaptée pourrait passer par des systèmes garantissant le maintien d'une température minimale constante, plutôt que des solutions axées sur l'atteinte de températures élevées.",
-      "Ce processus de contact s'est révélé fondamental pour redéfinir le problème et aligner la solution avec les besoins réels du marché, renforçant l'importance d'une approche orientée vers la stabilité thermique et l'efficacité énergétique dans les contextes agricoles.",
-    ],
+    outreach: {
+      stats: [
+        { value: "50+", label: "entreprises contactées" },
+        { value: "5", label: "ont répondu" },
+        { value: "2", label: "intérêt réel" },
+      ],
+      insights: [
+        "Secteurs ciblés : production en serre (fraises, tomates) et apiculture.",
+        "Retour clé : maintenir une température minimale constante plutôt qu'atteindre des températures élevées.",
+        "Résultat : problème redéfini avec un focus sur la stabilité thermique et l'efficacité énergétique.",
+      ],
+    },
   },
   {
     id: "zoom-meeting",

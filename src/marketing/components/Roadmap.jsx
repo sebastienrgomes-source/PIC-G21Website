@@ -192,12 +192,22 @@ export default function Roadmap() {
                     </div>
                   </button>
                 </div>
-              ) : selectedMilestone.summary ? (
-                /* Empresas contactadas: resumo textual do processo de contacto */
-                <div className="execution-outreach-summary">
-                  {selectedMilestone.summary.map((paragraph, i) => (
-                    <p key={i}>{paragraph}</p>
-                  ))}
+              ) : selectedMilestone.outreach ? (
+                /* Empresas contactadas: stat cards + insights */
+                <div className="execution-outreach">
+                  <div className="outreach-stats">
+                    {selectedMilestone.outreach.stats.map((stat) => (
+                      <div key={stat.label} className="outreach-stat-card">
+                        <span className="outreach-stat-value">{stat.value}</span>
+                        <span className="outreach-stat-label">{stat.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <ul className="outreach-insights">
+                    {selectedMilestone.outreach.insights.map((insight) => (
+                      <li key={insight}>{insight}</li>
+                    ))}
+                  </ul>
                 </div>
               ) : (
                 /* Milestones normais: tarefas + entidades */

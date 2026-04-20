@@ -55,13 +55,18 @@ export const roadmapEnMilestones = [
     phaseLabel: "Completed",
     phaseTone: "done",
     current: false,
-    summary: [
-      "In an early stage of the project, an outreach effort was made to companies potentially interested in the solution developed by the team, with the goal of validating product-market fit and better understanding real market requirements.",
-      "Several relevant sectors were identified, with a particular focus on agriculture, namely greenhouse production and beekeeping. In total, more than 50 companies were contacted, including producers of different crops (such as strawberry, tomato, and other greenhouse crops) and honey producers.",
-      "Of this group, only 5 companies responded showing willingness to analyse the proposal. However, the majority indicated they had no direct need for the solution, either because they operate in open greenhouses, already have adequate thermal control systems, or do not consider the problem critical in their specific context.",
-      "Even so, two companies stood out for showing interest in the concept, especially when considered for larger-scale applications. These interactions were particularly valuable, as they allowed the collection of important technical feedback. In particular, it was suggested that a more appropriate approach could be systems that ensure the maintenance of a constant minimum temperature, rather than solutions focused on reaching high temperatures.",
-      "This outreach process proved fundamental for redefining the problem and aligning the solution with real market needs, reinforcing the importance of an approach focused on thermal stability and energy efficiency in agricultural contexts.",
-    ],
+    outreach: {
+      stats: [
+        { value: "50+", label: "companies contacted" },
+        { value: "5", label: "responded" },
+        { value: "2", label: "showed real interest" },
+      ],
+      insights: [
+        "Sectors approached: greenhouse production (strawberry, tomato) and beekeeping.",
+        "Key insight: maintain a constant minimum temperature rather than reaching high temperatures.",
+        "Outcome: problem redefined with a focus on thermal stability and energy efficiency.",
+      ],
+    },
   },
   {
     id: "zoom-meeting",

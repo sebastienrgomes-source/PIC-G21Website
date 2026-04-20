@@ -55,13 +55,18 @@ export const roadmapPtMilestones = [
     phaseLabel: "Concluído",
     phaseTone: "done",
     current: false,
-    summary: [
-      "Numa fase inicial do projeto, foi realizado um esforço de contacto com empresas potencialmente interessadas na solução desenvolvida pela equipa, com o objetivo de validar a necessidade do produto e compreender melhor os requisitos do mercado.",
-      "Foram identificados vários setores relevantes, com especial foco na área da agricultura, nomeadamente produção em estufa e apicultura. No total, foram contactadas mais de 50 empresas, incluindo produtores de diferentes culturas (como morango, tomate e outras culturas em estufa) e produtores de mel.",
-      "Deste conjunto, apenas 5 empresas responderam demonstrando disponibilidade para analisar a proposta. No entanto, a maioria indicou não ter necessidade direta da solução, seja por operar em estufas abertas, já dispor de sistemas de controlo térmico adequados, ou por não considerar o problema crítico no seu contexto específico.",
-      "Ainda assim, duas empresas destacaram-se por demonstrarem interesse no conceito, sobretudo quando pensado para aplicações de maior escala. Estas interações foram particularmente relevantes, pois permitiram recolher feedback técnico importante. Em particular, foi sugerido que uma abordagem mais adequada poderá passar por sistemas que garantam a manutenção de uma temperatura mínima constante, em vez de soluções focadas em atingir temperaturas elevadas.",
-      "Este processo de contacto revelou-se fundamental para a redefinição do problema e para o alinhamento da solução com necessidades reais do mercado, reforçando a importância de uma abordagem orientada à estabilidade térmica e eficiência energética em contextos agrícolas.",
-    ],
+    outreach: {
+      stats: [
+        { value: "50+", label: "empresas contactadas" },
+        { value: "5", label: "responderam à proposta" },
+        { value: "2", label: "com interesse real" },
+      ],
+      insights: [
+        "Setores abordados: produção em estufa (morango, tomate) e apicultura.",
+        "Feedback técnico: manter temperatura mínima constante, não atingir temperaturas elevadas.",
+        "Resultado: redefinição do problema com foco em estabilidade térmica e eficiência energética.",
+      ],
+    },
   },
   {
     id: "zoom-meeting",

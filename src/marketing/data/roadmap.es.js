@@ -55,13 +55,18 @@ export const roadmapEsMilestones = [
     phaseLabel: "Completado",
     phaseTone: "done",
     current: false,
-    summary: [
-      "En una fase inicial del proyecto, se realizó un esfuerzo de contacto con empresas potencialmente interesadas en la solución desarrollada por el equipo, con el objetivo de validar la necesidad del producto y comprender mejor los requisitos del mercado.",
-      "Se identificaron varios sectores relevantes, con especial énfasis en el área agrícola, concretamente en la producción en invernadero y la apicultura. En total, se contactaron más de 50 empresas, incluyendo productores de diferentes cultivos (como fresa, tomate y otros cultivos en invernadero) y productores de miel.",
-      "De este conjunto, solo 5 empresas respondieron mostrando disponibilidad para analizar la propuesta. Sin embargo, la mayoría indicó no tener necesidad directa de la solución, ya sea porque operan en invernaderos abiertos, ya disponen de sistemas de control térmico adecuados, o no consideran el problema crítico en su contexto específico.",
-      "Aun así, dos empresas se destacaron por demostrar interés en el concepto, especialmente cuando se pensó para aplicaciones a mayor escala. Estas interacciones fueron particularmente relevantes, ya que permitieron recopilar retroalimentación técnica importante. En particular, se sugirió que un enfoque más adecuado podría ser sistemas que garanticen el mantenimiento de una temperatura mínima constante, en lugar de soluciones enfocadas en alcanzar temperaturas elevadas.",
-      "Este proceso de contacto resultó fundamental para la redefinición del problema y la alineación de la solución con necesidades reales del mercado, reforzando la importancia de un enfoque orientado a la estabilidad térmica y eficiencia energética en contextos agrícolas.",
-    ],
+    outreach: {
+      stats: [
+        { value: "50+", label: "empresas contactadas" },
+        { value: "5", label: "respondieron" },
+        { value: "2", label: "con interés real" },
+      ],
+      insights: [
+        "Sectores abordados: producción en invernadero (fresa, tomate) y apicultura.",
+        "Insight técnico: mantener temperatura mínima constante, no alcanzar temperaturas elevadas.",
+        "Resultado: redefinición del problema con foco en estabilidad térmica y eficiencia energética.",
+      ],
+    },
   },
   {
     id: "zoom-meeting",

@@ -1102,20 +1102,74 @@ p {
   }
 }
 
-/* ── Outreach summary — step 3 text block ── */
-.execution-outreach-summary {
+/* ── Outreach stat cards + insights — step 3 ── */
+.execution-outreach {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 0.25rem 0 0.5rem;
-  max-width: 72ch;
+  gap: 1.5rem;
+  padding: 0.25rem 0 0.25rem;
 }
 
-.execution-outreach-summary p {
+.outreach-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.outreach-stat-card {
+  flex: 1;
+  min-width: 8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(38, 66, 148, 0.45);
+  border: 1px solid rgba(100, 149, 237, 0.3);
+  border-radius: 0.75rem;
+  padding: 1.1rem 1rem;
+  text-align: center;
+}
+
+.outreach-stat-value {
+  color: #5de8a0;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.outreach-stat-label {
+  color: #8aafd4;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.outreach-insights {
+  list-style: none;
+  padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.outreach-insights li {
+  position: relative;
+  padding-left: 1.3rem;
   color: #c4d5f8;
   font-size: 0.92rem;
-  line-height: 1.65;
+  line-height: 1.55;
+}
+
+.outreach-insights li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #5de8a0;
+  font-size: 0.85rem;
+  top: 0.05em;
 }
 
 /* ── Company logos strip + Zoom card — full-width row below step ── */
