@@ -55,45 +55,12 @@ export const roadmapPtMilestones = [
     phaseLabel: "Concluído",
     phaseTone: "done",
     current: false,
-    details: [
-      "5 empresas foram contactadas para validação inicial do conceito.",
-      "Recolha de feedback técnico e comercial do setor agro-industrial.",
-      "Identificação de necessidades reais e interesse comercial na solução.",
-    ],
-    partners: ["Equipa HeatSpot", "Setor Agro-industrial"],
-    // Substitui logo: null pelo import do logo de cada empresa (ver instruções no topo)
-    // Substitui o texto de feedback pelo conteúdo real recebido
-    companies: [
-      {
-        name: "company1Name",
-        logo: null,           // TODO: import company1Logo from "../assets/logos/company1.png"
-        feedback: "company1Feedback",
-        interactionType: "Feedback por email",
-      },
-      {
-        name: "company2Name",
-        logo: null,           // TODO: import company2Logo from "../assets/logos/company2.png"
-        feedback: "company2Feedback",
-        interactionType: "Feedback por email",
-      },
-      {
-        name: "company3Name",
-        logo: null,           // TODO: import company3Logo from "../assets/logos/company3.png"
-        feedback: "company3Feedback",
-        interactionType: "Feedback por email",
-      },
-      {
-        name: "company4Name",
-        logo: null,           // TODO: import company4Logo from "../assets/logos/company4.png"
-        feedback: "company4Feedback",
-        interactionType: "Feedback por email",
-      },
-      {
-        name: "company5Name",
-        logo: null,           // TODO: import company5Logo from "../assets/logos/company5.png"
-        feedback: "company5Feedback",
-        interactionType: "Feedback por email",
-      },
+    summary: [
+      "Numa fase inicial do projeto, foi realizado um esforço de contacto com empresas potencialmente interessadas na solução desenvolvida pela equipa, com o objetivo de validar a necessidade do produto e compreender melhor os requisitos do mercado.",
+      "Foram identificados vários setores relevantes, com especial foco na área da agricultura, nomeadamente produção em estufa e apicultura. No total, foram contactadas mais de 50 empresas, incluindo produtores de diferentes culturas (como morango, tomate e outras culturas em estufa) e produtores de mel.",
+      "Deste conjunto, apenas 5 empresas responderam demonstrando disponibilidade para analisar a proposta. No entanto, a maioria indicou não ter necessidade direta da solução, seja por operar em estufas abertas, já dispor de sistemas de controlo térmico adequados, ou por não considerar o problema crítico no seu contexto específico.",
+      "Ainda assim, duas empresas destacaram-se por demonstrarem interesse no conceito, sobretudo quando pensado para aplicações de maior escala. Estas interações foram particularmente relevantes, pois permitiram recolher feedback técnico importante. Em particular, foi sugerido que uma abordagem mais adequada poderá passar por sistemas que garantam a manutenção de uma temperatura mínima constante, em vez de soluções focadas em atingir temperaturas elevadas.",
+      "Este processo de contacto revelou-se fundamental para a redefinição do problema e para o alinhamento da solução com necessidades reais do mercado, reforçando a importância de uma abordagem orientada à estabilidade térmica e eficiência energética em contextos agrícolas.",
     ],
   },
   {

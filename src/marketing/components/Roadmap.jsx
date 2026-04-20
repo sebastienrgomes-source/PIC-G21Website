@@ -192,31 +192,11 @@ export default function Roadmap() {
                     </div>
                   </button>
                 </div>
-              ) : selectedMilestone.companies ? (
-                /* Empresas contactadas: logos clicáveis para abrir modal de feedback */
-                <div className="execution-step-companies">
-                  {selectedMilestone.companies.map((company) => (
-                    <button
-                      key={company.name}
-                      type="button"
-                      className="company-logo-slot"
-                      onClick={() => setModalCompany(company)}
-                      aria-label={`Ver feedback de ${company.name}`}
-                      title={company.name}
-                    >
-                      {company.logo ? (
-                        <img
-                          src={company.logo}
-                          alt={`Logo ${company.name}`}
-                          className="company-logo-img"
-                        />
-                      ) : (
-                        <div className="company-logo-fallback" aria-hidden="true">
-                          <span>{company.name.slice(0, 2)}</span>
-                        </div>
-                      )}
-                      <span className="company-logo-name">{company.name}</span>
-                    </button>
+              ) : selectedMilestone.summary ? (
+                /* Empresas contactadas: resumo textual do processo de contacto */
+                <div className="execution-outreach-summary">
+                  {selectedMilestone.summary.map((paragraph, i) => (
+                    <p key={i}>{paragraph}</p>
                   ))}
                 </div>
               ) : (

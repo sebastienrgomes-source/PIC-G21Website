@@ -55,43 +55,12 @@ export const roadmapFrMilestones = [
     phaseLabel: "Terminé",
     phaseTone: "done",
     current: false,
-    details: [
-      "5 entreprises contactées pour la validation initiale du concept.",
-      "Collecte de retours techniques et commerciaux du secteur agro-industriel.",
-      "Identification des besoins réels et de l'intérêt commercial pour la solution.",
-    ],
-    partners: ["Équipe HeatSpot", "Secteur Agro-industriel"],
-    companies: [
-      {
-        name: "company1Name",
-        logo: null,
-        feedback: "company1Feedback",
-        interactionType: "Retour par email",
-      },
-      {
-        name: "company2Name",
-        logo: null,
-        feedback: "company2Feedback",
-        interactionType: "Retour par email",
-      },
-      {
-        name: "company3Name",
-        logo: null,
-        feedback: "company3Feedback",
-        interactionType: "Retour par email",
-      },
-      {
-        name: "company4Name",
-        logo: null,
-        feedback: "company4Feedback",
-        interactionType: "Retour par email",
-      },
-      {
-        name: "company5Name",
-        logo: null,
-        feedback: "company5Feedback",
-        interactionType: "Retour par email",
-      },
+    summary: [
+      "Au cours d'une phase initiale du projet, un effort de contact a été réalisé auprès d'entreprises potentiellement intéressées par la solution développée par l'équipe, dans le but de valider la pertinence du produit et de mieux comprendre les exigences du marché.",
+      "Plusieurs secteurs pertinents ont été identifiés, avec un accent particulier sur l'agriculture, notamment la production en serre et l'apiculture. Au total, plus de 50 entreprises ont été contactées, dont des producteurs de différentes cultures (comme les fraises, tomates et autres cultures en serre) et des apiculteurs.",
+      "De cet ensemble, seules 5 entreprises ont répondu en manifestant leur disponibilité à analyser la proposition. Cependant, la majorité a indiqué ne pas avoir de besoin direct pour la solution, soit parce qu'elles opèrent dans des serres ouvertes, disposent déjà de systèmes de contrôle thermique adéquats, ou ne considèrent pas le problème comme critique dans leur contexte spécifique.",
+      "Malgré cela, deux entreprises se sont distinguées par leur intérêt pour le concept, notamment pour des applications à plus grande échelle. Ces interactions ont été particulièrement précieuses car elles ont permis de recueillir des retours techniques importants. Il a notamment été suggéré qu'une approche plus adaptée pourrait passer par des systèmes garantissant le maintien d'une température minimale constante, plutôt que des solutions axées sur l'atteinte de températures élevées.",
+      "Ce processus de contact s'est révélé fondamental pour redéfinir le problème et aligner la solution avec les besoins réels du marché, renforçant l'importance d'une approche orientée vers la stabilité thermique et l'efficacité énergétique dans les contextes agricoles.",
     ],
   },
   {

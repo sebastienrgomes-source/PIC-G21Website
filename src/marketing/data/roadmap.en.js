@@ -55,45 +55,12 @@ export const roadmapEnMilestones = [
     phaseLabel: "Completed",
     phaseTone: "done",
     current: false,
-    details: [
-      "5 companies contacted for initial concept validation.",
-      "Collection of technical and commercial feedback from the agro-industrial sector.",
-      "Identification of real-world needs and commercial interest in the solution.",
-    ],
-    partners: ["HeatSpot Team", "Agro-industrial Sector"],
-    // Replace logo: null with the imported logo for each company (see instructions above)
-    // Replace feedback text with the actual received content
-    companies: [
-      {
-        name: "company1Name",
-        logo: null,           // TODO: import company1Logo from "../assets/logos/company1.png"
-        feedback: "company1Feedback",
-        interactionType: "Email feedback",
-      },
-      {
-        name: "company2Name",
-        logo: null,           // TODO: import company2Logo from "../assets/logos/company2.png"
-        feedback: "company2Feedback",
-        interactionType: "Email feedback",
-      },
-      {
-        name: "company3Name",
-        logo: null,           // TODO: import company3Logo from "../assets/logos/company3.png"
-        feedback: "company3Feedback",
-        interactionType: "Email feedback",
-      },
-      {
-        name: "company4Name",
-        logo: null,           // TODO: import company4Logo from "../assets/logos/company4.png"
-        feedback: "company4Feedback",
-        interactionType: "Email feedback",
-      },
-      {
-        name: "company5Name",
-        logo: null,           // TODO: import company5Logo from "../assets/logos/company5.png"
-        feedback: "company5Feedback",
-        interactionType: "Email feedback",
-      },
+    summary: [
+      "In an early stage of the project, an outreach effort was made to companies potentially interested in the solution developed by the team, with the goal of validating product-market fit and better understanding real market requirements.",
+      "Several relevant sectors were identified, with a particular focus on agriculture, namely greenhouse production and beekeeping. In total, more than 50 companies were contacted, including producers of different crops (such as strawberry, tomato, and other greenhouse crops) and honey producers.",
+      "Of this group, only 5 companies responded showing willingness to analyse the proposal. However, the majority indicated they had no direct need for the solution, either because they operate in open greenhouses, already have adequate thermal control systems, or do not consider the problem critical in their specific context.",
+      "Even so, two companies stood out for showing interest in the concept, especially when considered for larger-scale applications. These interactions were particularly valuable, as they allowed the collection of important technical feedback. In particular, it was suggested that a more appropriate approach could be systems that ensure the maintenance of a constant minimum temperature, rather than solutions focused on reaching high temperatures.",
+      "This outreach process proved fundamental for redefining the problem and aligning the solution with real market needs, reinforcing the importance of an approach focused on thermal stability and energy efficiency in agricultural contexts.",
     ],
   },
   {

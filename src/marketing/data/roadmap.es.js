@@ -55,43 +55,12 @@ export const roadmapEsMilestones = [
     phaseLabel: "Completado",
     phaseTone: "done",
     current: false,
-    details: [
-      "5 empresas contactadas para validación inicial del concepto.",
-      "Recopilación de retroalimentación técnica y comercial del sector agro-industrial.",
-      "Identificación de necesidades reales e interés comercial en la solución.",
-    ],
-    partners: ["Equipo HeatSpot", "Sector Agro-industrial"],
-    companies: [
-      {
-        name: "company1Name",
-        logo: null,
-        feedback: "company1Feedback",
-        interactionType: "Retroalimentación por email",
-      },
-      {
-        name: "company2Name",
-        logo: null,
-        feedback: "company2Feedback",
-        interactionType: "Retroalimentación por email",
-      },
-      {
-        name: "company3Name",
-        logo: null,
-        feedback: "company3Feedback",
-        interactionType: "Retroalimentación por email",
-      },
-      {
-        name: "company4Name",
-        logo: null,
-        feedback: "company4Feedback",
-        interactionType: "Retroalimentación por email",
-      },
-      {
-        name: "company5Name",
-        logo: null,
-        feedback: "company5Feedback",
-        interactionType: "Retroalimentación por email",
-      },
+    summary: [
+      "En una fase inicial del proyecto, se realizó un esfuerzo de contacto con empresas potencialmente interesadas en la solución desarrollada por el equipo, con el objetivo de validar la necesidad del producto y comprender mejor los requisitos del mercado.",
+      "Se identificaron varios sectores relevantes, con especial énfasis en el área agrícola, concretamente en la producción en invernadero y la apicultura. En total, se contactaron más de 50 empresas, incluyendo productores de diferentes cultivos (como fresa, tomate y otros cultivos en invernadero) y productores de miel.",
+      "De este conjunto, solo 5 empresas respondieron mostrando disponibilidad para analizar la propuesta. Sin embargo, la mayoría indicó no tener necesidad directa de la solución, ya sea porque operan en invernaderos abiertos, ya disponen de sistemas de control térmico adecuados, o no consideran el problema crítico en su contexto específico.",
+      "Aun así, dos empresas se destacaron por demostrar interés en el concepto, especialmente cuando se pensó para aplicaciones a mayor escala. Estas interacciones fueron particularmente relevantes, ya que permitieron recopilar retroalimentación técnica importante. En particular, se sugirió que un enfoque más adecuado podría ser sistemas que garanticen el mantenimiento de una temperatura mínima constante, en lugar de soluciones enfocadas en alcanzar temperaturas elevadas.",
+      "Este proceso de contacto resultó fundamental para la redefinición del problema y la alineación de la solución con necesidades reales del mercado, reforzando la importancia de un enfoque orientado a la estabilidad térmica y eficiencia energética en contextos agrícolas.",
     ],
   },
   {
