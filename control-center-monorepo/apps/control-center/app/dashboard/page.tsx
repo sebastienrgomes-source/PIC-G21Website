@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AddDeviceForm } from '@/components/add-device-form';
+import { MqttDevicePanel } from '@/components/mqtt-device-panel';
 import { SignOutButton } from '@/components/sign-out-button';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
@@ -187,6 +188,10 @@ export default async function DashboardPage() {
         </div>
       </div>
     </section><section id="fleet" className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8 md:pb-14">
+        <div className="mb-6">
+          <MqttDevicePanel deviceUid={process.env.NEXT_PUBLIC_DEVICE_UID ?? 'esp32-001'} />
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {safeDevices.map((device, index) => (
             <Card

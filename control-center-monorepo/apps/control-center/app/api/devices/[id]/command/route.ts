@@ -1,9 +1,9 @@
-﻿import { randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
-import { computeDutyCycle, modeSchema } from '@pic/shared';
+import { commandPayloadSchema, modeSchema, type CommandPayload } from '@pic/shared';
 import { z } from 'zod';
 import { getDemoSession } from '@/lib/demo-auth';
-import { getDemoDeviceById, getDemoDeviceSettings, getDemoTelemetry } from '@/lib/demo-data';
+import { getDemoDeviceById } from '@/lib/demo-data';
 import { isDemoMode } from '@/lib/demo-mode';
 import { jsonError } from '@/lib/http';
 import { publishDeviceCommand } from '@/lib/mqtt-publisher';
@@ -13,159 +13,122 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 export const runtime = 'nodejs';
 
 const bodySchema = z.object({
-  tSet: z.number().min(2).max(20),
-  mode: modeSchema,
-});
+  heater_enabled: z.boolean().optional(),
+  automatic_mode: z.boolean().optional(),
+  target_temperature_c: z.number().min(0).max(35).optional(),
+  tSet: z.number().min(0).max(35).optional(),
+  mode: modeSchema.optional(),
+}).refine(
+  (payload) =>
+    payload.heater_enabled !== undefined ||
+    payload.automatic_mode !== undefined ||
+    payload.target_temperature_c !== undefined ||
+    payload.tSet !== undefined ||
+    payload.mode !== undefined,
+  'Pedido sem campos de comando ESP32.',
+);
 
-const isLowSolarBudget = (batterySamples: Array<number | null>, minBattV: number): boolean => {
-  const values = batterySamples.filter((sample): sample is number => typeof sample === 'number');
-  if (values.length < 3) return false;
+type CommandRequest = z.infer<typeof bodySchema>;
 
-  const peak = Math.max(...values);
-  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+const normalizeEsp32Payload = (body: CommandRequest): CommandPayload => {
+  const payload: Partial<CommandPayload> = {};
 
-  return peak < minBattV + 0.45 || avg < minBattV + 0.2;
+  if (body.heater_enabled !== undefined) payload.heater_enabled = body.heater_enabled;
+  if (body.automatic_mode !== undefined) payload.automatic_mode = body.automatic_mode;
+  if (body.target_temperature_c !== undefined) payload.target_temperature_c = body.target_temperature_c;
+  if (body.tSet !== undefined) payload.target_temperature_c = body.tSet;
+  if (body.mode !== undefined) {
+    payload.mode = body.mode;
+    if (body.automatic_mode === undefined) payload.automatic_mode = body.mode === 'AUTO';
+  }
+
+  const parsed = commandPayloadSchema.safeParse(payload);
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+};
+
+const commandTypeForPayload = (payload: CommandPayload): string => {
+  if (payload.heater_enabled !== undefined) return 'SET_HEATER';
+  if (payload.target_temperature_c !== undefined) return 'SET_SETPOINT';
+  if (payload.automatic_mode !== undefined) return 'SET_AUTOMATIC_MODE';
+  return 'ESP32_CONTROL';
 };
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const parsed = bodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return jsonError(parsed.error.message, 400);
+  const parsedBody = bodySchema.safeParse(await request.json().catch(() => null));
+  if (!parsedBody.success) return jsonError(parsedBody.error.message, 400);
 
-  const { tSet, mode } = parsed.data;
+  let esp32Payload: CommandPayload;
+  try {
+    esp32Payload = normalizeEsp32Payload(parsedBody.data);
+  } catch (error) {
+    return jsonError(error instanceof Error ? error.message : 'Payload MQTT invalido.', 400);
+  }
+
+  const requestedDevice = params.id;
 
   if (isDemoMode()) {
     const session = getDemoSession();
     if (!session) return jsonError('Unauthorized', 401);
 
-    const device = getDemoDeviceById(params.id);
-    if (!device) return jsonError('Device nao encontrado.', 404);
+    const demoDevice = getDemoDeviceById(requestedDevice);
+    const deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? demoDevice?.device_uid ?? requestedDevice;
 
-    const settings = getDemoDeviceSettings(params.id);
-    const latestTelemetry = getDemoTelemetry(params.id).at(-1);
-
-    const dutyResult = computeDutyCycle({
-      tInternal: latestTelemetry?.t_internal ?? null,
-      tSet,
-      tBand: Number(settings.t_band),
-      maxDuty: Number(settings.max_duty),
-      vBatt: latestTelemetry?.v_batt ?? null,
-      minBattV: Number(settings.min_batt_v),
-      mode,
-      lowSolarBudget: false,
-    });
-
-    const commandPayload = {
-      msgId: randomUUID(),
-      type: 'SET_CONTROL' as const,
-      tSet,
-      mode,
-      duty: dutyResult.duty,
-      maxDuty: Number(settings.max_duty),
-      ts: Date.now(),
-    };
-
-    return NextResponse.json({
-      command: {
-        id: randomUUID(),
-        status: 'sent',
-        payload: commandPayload,
-        created_at: new Date().toISOString(),
-      },
-      computed: {
-        ...dutyResult,
-        lowSolarBudget: false,
-      },
-    });
+    try {
+      const published = await publishDeviceCommand(deviceUid, esp32Payload);
+      return NextResponse.json({
+        ok: true,
+        topic: published.topic,
+        payload: published.payload,
+        command: {
+          id: randomUUID(),
+          status: 'sent',
+          payload: published.payload,
+          created_at: new Date().toISOString(),
+        },
+      });
+    } catch (mqttError) {
+      return jsonError(
+        mqttError instanceof Error ? `Falha MQTT: ${mqttError.message}` : 'Falha MQTT ao publicar comando.',
+        502,
+      );
+    }
   }
 
   const { errorResponse, user, supabase } = await requireAuthenticatedUser();
   if (errorResponse || !user || !supabase) return errorResponse;
 
-  const deviceId = params.id;
-
-  const { data: device, error: deviceError } = await supabase
+  const byUid = await supabase
     .from('devices')
     .select('id, owner_id, device_uid')
-    .eq('id', deviceId)
+    .eq('device_uid', requestedDevice)
     .maybeSingle();
 
-  if (deviceError) return jsonError(deviceError.message, 500);
+  if (byUid.error) return jsonError(byUid.error.message, 500);
+
+  let device = byUid.data as { id: string; owner_id: string | null; device_uid: string } | null;
+
+  if (!device) {
+    const byId = await supabase
+      .from('devices')
+      .select('id, owner_id, device_uid')
+      .eq('id', requestedDevice)
+      .maybeSingle();
+
+    if (byId.error) return jsonError('Device nao encontrado.', 404);
+    device = byId.data as { id: string; owner_id: string | null; device_uid: string } | null;
+  }
+
   if (!device || device.owner_id !== user.id) return jsonError('Device nao encontrado.', 404);
 
   const service = createServiceRoleClient();
-  const { data: settingsRow, error: settingsError } = await service
-    .from('device_settings')
-    .select('device_id, mode, t_set, t_band, max_duty, min_batt_v, max_heater_w')
-    .eq('device_id', deviceId)
-    .maybeSingle();
-
-  if (settingsError) return jsonError(settingsError.message, 500);
-
-  const settings = settingsRow ?? {
-    device_id: deviceId,
-    mode: 'AUTO',
-    t_set: 8,
-    t_band: 1,
-    max_duty: 0.8,
-    min_batt_v: 11.6,
-    max_heater_w: 60,
-  };
-
-  const { data: latestTelemetry, error: telemetryError } = await service
-    .from('device_telemetry')
-    .select('t_internal, v_batt')
-    .eq('device_id', deviceId)
-    .order('ts', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (telemetryError) return jsonError(telemetryError.message, 500);
-
-  const lowSolarStartIso = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-  const { data: recentTelemetry, error: recentTelemetryError } = await service
-    .from('device_telemetry')
-    .select('v_batt')
-    .eq('device_id', deviceId)
-    .gte('ts', lowSolarStartIso)
-    .order('ts', { ascending: false })
-    .limit(72);
-
-  if (recentTelemetryError) return jsonError(recentTelemetryError.message, 500);
-
-  const lowSolarBudget = isLowSolarBudget(
-    (recentTelemetry ?? []).map((row) => row.v_batt),
-    Number(settings.min_batt_v),
-  );
-
-  const dutyResult = computeDutyCycle({
-    tInternal: latestTelemetry?.t_internal ?? null,
-    tSet,
-    tBand: Number(settings.t_band),
-    maxDuty: Number(settings.max_duty),
-    vBatt: latestTelemetry?.v_batt ?? null,
-    minBattV: Number(settings.min_batt_v),
-    mode,
-    lowSolarBudget,
-  });
-
-  const msgId = randomUUID();
-  const commandPayload = {
-    msgId,
-    type: 'SET_CONTROL' as const,
-    tSet,
-    mode,
-    duty: dutyResult.duty,
-    maxDuty: Number(settings.max_duty),
-    ts: Date.now(),
-  };
-
   const { data: command, error: commandError } = await service
     .from('device_commands')
     .insert({
-      device_id: deviceId,
+      device_id: device.id,
       owner_id: user.id,
-      command_type: 'SET_CONTROL',
-      payload: commandPayload,
+      command_type: commandTypeForPayload(esp32Payload),
+      payload: esp32Payload,
       status: 'queued',
     })
     .select('id, status, payload, created_at')
@@ -173,36 +136,18 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   if (commandError || !command) return jsonError(commandError?.message ?? 'Failed to create command', 500);
 
-  const { error: settingsUpdateError } = await service
-    .from('device_settings')
-    .upsert(
-      {
-        device_id: deviceId,
-        mode,
-        t_set: tSet,
-        t_band: settings.t_band,
-        max_duty: settings.max_duty,
-        min_batt_v: settings.min_batt_v,
-        max_heater_w: settings.max_heater_w,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'device_id' },
-    );
-  if (settingsUpdateError) return jsonError(settingsUpdateError.message, 500);
-
   try {
-    await publishDeviceCommand(device.device_uid, commandPayload);
+    const published = await publishDeviceCommand(device.device_uid, esp32Payload);
     await service.from('device_commands').update({ status: 'sent' }).eq('id', command.id);
 
     return NextResponse.json({
+      ok: true,
+      topic: published.topic,
+      payload: published.payload,
       command: {
         ...command,
         status: 'sent',
-        payload: commandPayload,
-      },
-      computed: {
-        ...dutyResult,
-        lowSolarBudget,
+        payload: published.payload,
       },
     });
   } catch (mqttError) {

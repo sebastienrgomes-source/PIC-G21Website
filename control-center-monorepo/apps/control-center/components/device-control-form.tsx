@@ -9,26 +9,27 @@ import { Select } from '@/components/ui/select';
 
 interface Props {
   deviceId: string;
+  deviceUid?: string;
   initialMode: DeviceMode;
   initialTSet: number;
 }
 
+interface Esp32CommandPayload {
+  heater_enabled?: boolean;
+  automatic_mode?: boolean;
+  target_temperature_c?: number;
+  mode?: DeviceMode;
+}
+
 interface CommandResponse {
-  command: {
+  ok: boolean;
+  topic: string;
+  payload: Esp32CommandPayload;
+  command?: {
     id: string;
     status: string;
-    payload: {
-      duty: number;
-      mode: DeviceMode;
-      tSet: number;
-    };
-  };
-  computed: {
-    duty: number;
-    state: string;
-    effectiveMode: Exclude<DeviceMode, 'AUTO'>;
-    reason: string;
-    lowSolarBudget: boolean;
+    created_at?: string;
+    payload: Esp32CommandPayload;
   };
 }
 
@@ -39,23 +40,23 @@ const modeOptions = [
   { value: 'AUTO', label: 'AUTO' },
 ];
 
-export function DeviceControlForm({ deviceId, initialMode, initialTSet }: Props) {
+export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSet }: Props) {
   const [tSet, setTSet] = useState(initialTSet);
   const [mode, setMode] = useState<DeviceMode>(initialMode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CommandResponse | null>(null);
 
-  const apply = async () => {
+  const sendCommand = async (command: Esp32CommandPayload) => {
     setBusy(true);
     setError(null);
     setResult(null);
 
     try {
-      const response = await fetch(`/api/devices/${deviceId}/command`, {
+      const response = await fetch(`/api/devices/${deviceUid ?? deviceId}/command`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tSet, mode }),
+        body: JSON.stringify(command),
       });
 
       const payload = (await response.json()) as CommandResponse | { error: string };
@@ -69,12 +70,20 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet }: Props)
     }
   };
 
+  const applySetpoint = async () => {
+    await sendCommand({
+      target_temperature_c: tSet,
+      mode,
+      automatic_mode: mode === 'AUTO',
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <Label className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4d5f8e]" htmlFor="tset">
-            Setpoint (2..20 C)
+            Setpoint (0..35 C)
           </Label>
           <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#183f95]">
             {tSet.toFixed(1)} C
@@ -85,8 +94,8 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet }: Props)
             <input
               id="tset"
               type="range"
-              min={2}
-              max={20}
+              min={0}
+              max={35}
               step={0.5}
               value={tSet}
               onChange={(event) => setTSet(Number(event.target.value))}
@@ -94,8 +103,8 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet }: Props)
             />
             <Input
               className="h-10 w-24 rounded-lg border-blue-200 bg-white"
-              max={20}
-              min={2}
+              max={35}
+              min={0}
               step={0.5}
               type="number"
               value={tSet}
@@ -118,23 +127,33 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet }: Props)
         />
       </div>
 
-      <Button className="h-11 w-full" disabled={busy} onClick={apply}>
-        {busy ? 'A aplicar...' : 'Apply'}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: true })}>
+          Ligar aquecedor
+        </Button>
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: false })} variant="outline">
+          Desligar aquecedor
+        </Button>
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ automatic_mode: true })} variant="outline">
+          Modo automatico
+        </Button>
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ automatic_mode: false })} variant="outline">
+          Modo manual
+        </Button>
+      </div>
+
+      <Button className="h-11 w-full" disabled={busy} onClick={applySetpoint}>
+        {busy ? 'A enviar...' : 'Aplicar setpoint'}
       </Button>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {result ? (
         <div className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-3 text-sm text-emerald-900">
-          <p>
-            Comando enviado (status: {result.command.status}, duty: {result.command.payload.duty.toFixed(2)}).
-          </p>
-          <p>
-            Estado calculado: {result.computed.state}, modo efetivo: {result.computed.effectiveMode}, regra:{' '}
-            {result.computed.reason}.
-          </p>
-          {result.computed.lowSolarBudget ? (
-            <p className="text-amber-700">Budget solar reduzido ativo: duty maximo foi limitado.</p>
-          ) : null}
+          <p className="font-semibold">Comando MQTT enviado.</p>
+          <p className="mt-1 break-all">Topico: {result.topic}</p>
+          <code className="mt-2 block whitespace-pre-wrap break-all rounded-lg bg-white/70 px-2 py-1 font-mono text-[11px] leading-5">
+            {JSON.stringify(result.payload, null, 2)}
+          </code>
         </div>
       ) : null}
     </div>

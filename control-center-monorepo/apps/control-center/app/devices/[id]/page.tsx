@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { DeviceControlForm } from '@/components/device-control-form';
+import { MqttDevicePanel } from '@/components/mqtt-device-panel';
 import { SignOutButton } from '@/components/sign-out-button';
 import { TelemetryChart } from '@/components/telemetry-chart';
 import { Badge } from '@/components/ui/badge';
@@ -197,6 +198,7 @@ export default async function DevicePage({ params }: { params: { id: string } })
               <CardContent>
                 <DeviceControlForm
                   deviceId={device.id}
+                  deviceUid={device.device_uid}
                   initialMode={settings?.mode ?? 'AUTO'}
                   initialTSet={Number(settings?.t_set ?? 8)}
                 />
@@ -212,6 +214,10 @@ export default async function DevicePage({ params }: { params: { id: string } })
                 <TelemetryChart points={telemetry.map((row) => ({ ts: row.ts, t_internal: row.t_internal, duty: row.duty }))} />
               </CardContent>
             </Card>
+          </div>
+
+          <div className="mt-6">
+            <MqttDevicePanel deviceUid={device.device_uid} />
           </div>
 
           <Card className="mt-6 border-blue-100/80 bg-white/95">

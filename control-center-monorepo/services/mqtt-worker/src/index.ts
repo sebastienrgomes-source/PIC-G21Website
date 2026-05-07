@@ -3,6 +3,7 @@ import mqtt from 'mqtt';
 import { createClient } from '@supabase/supabase-js';
 import {
   ackPayloadSchema,
+  deviceTopic,
   extractDeviceUidFromTopic,
   statusPayloadSchema,
   telemetryPayloadSchema,
@@ -75,19 +76,22 @@ const handleTelemetry = async (topic: string, payloadRaw: string) => {
     return;
   }
 
-  const telemetryTsIso = new Date(telemetry.ts).toISOString();
+  const telemetryTsIso = new Date(telemetry.ts ?? Date.now()).toISOString();
+  const tInternal = telemetry.tInternal ?? telemetry.temperature_c ?? null;
+  const humidity = telemetry.humidity ?? telemetry.humidity_percent ?? null;
+  const rssi = telemetry.rssi ?? telemetry.rssi_dbm ?? null;
 
   const { error: insertError } = await supabase.from('device_telemetry').insert({
     device_id: deviceId,
     ts: telemetryTsIso,
-    t_internal: telemetry.tInternal ?? null,
+    t_internal: tInternal,
     t_external: telemetry.tExternal ?? null,
-    humidity: telemetry.humidity ?? null,
+    humidity,
     v_batt: telemetry.vBatt ?? null,
     i_heater: telemetry.iHeater ?? null,
     duty: telemetry.duty ?? null,
     state: telemetry.state ?? null,
-    raw: telemetry,
+    raw: { ...telemetry, rssi },
   });
 
   if (insertError) {
@@ -164,11 +168,17 @@ const handleStatus = async (topic: string, payloadRaw: string) => {
   if (!deviceId) return;
 
   const statusTsIso = new Date(status.ts ?? Date.now()).toISOString();
+  const normalizedStatus =
+    status.status === 'online' || status.status === 'offline'
+      ? status.status
+      : status.wifi_status === 'Ligado'
+        ? 'online'
+        : 'offline';
 
   const { error } = await supabase
     .from('devices')
     .update({
-      status: status.status,
+      status: normalizedStatus,
       last_seen_at: statusTsIso,
     })
     .eq('id', deviceId);
@@ -187,7 +197,7 @@ const start = () => {
 
   client.on('connect', () => {
     log('mqtt connected');
-    client.subscribe(['devices/+/telemetry', 'devices/+/ack', 'devices/+/status'], { qos: 1 }, (error) => {
+    client.subscribe([deviceTopic.telemetry('+'), deviceTopic.ack('+'), deviceTopic.status('+')], { qos: 1 }, (error) => {
       if (error) log('subscribe error', error.message);
       else log('subscriptions active');
     });
