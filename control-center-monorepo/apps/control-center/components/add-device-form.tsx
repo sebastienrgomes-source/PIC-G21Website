@@ -57,7 +57,7 @@ export function AddDeviceForm() {
           <Input
             className="h-11 rounded-xl border-blue-200 bg-[#f7f9ff]"
             id="device_uid"
-            placeholder="BEE-001-ESP32"
+            placeholder="esp32-001"
             required
             value={deviceUid}
             onChange={(event) => setDeviceUid(event.target.value)}

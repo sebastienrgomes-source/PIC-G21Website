@@ -1,12 +1,14 @@
 ﻿import { useState } from "react";
 import { useLanguage } from "../../marketing/context/LanguageContext";
-import { DEVICE_MODES } from "../../shared/utils/control";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select } from "./ui/select";
 
-const modeOptions = DEVICE_MODES.map((mode) => ({ value: mode, label: mode }));
+const modeOptions = [
+  { value: "AUTO", label: "Automatico" },
+  { value: "MANUAL", label: "Manual" },
+];
 
 const copy = {
   pt: {
@@ -22,11 +24,8 @@ const copy = {
       fallback: "Erro ao enviar comando",
     },
     result: {
-      sent: "Comando enviado",
-      computedState: "Estado calculado",
-      effectiveMode: "modo efetivo",
-      rule: "regra",
-      lowSolar: "Budget solar reduzido ativo: duty maximo foi limitado.",
+      sent: "Comando enviado para ESP32.",
+      topic: "Topico",
     },
   },
   en: {
@@ -42,11 +41,8 @@ const copy = {
       fallback: "Error sending command",
     },
     result: {
-      sent: "Command sent",
-      computedState: "Computed state",
-      effectiveMode: "effective mode",
-      rule: "rule",
-      lowSolar: "Reduced solar budget active: max duty was limited.",
+      sent: "Command sent to ESP32.",
+      topic: "Topic",
     },
   },
 };
@@ -56,7 +52,7 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
   const text = copy[language] ?? copy.en;
 
   const [tSet, setTSet] = useState(initialTSet);
-  const [mode, setMode] = useState(initialMode);
+  const [mode, setMode] = useState(initialMode === "AUTO" ? "AUTO" : "MANUAL");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -132,14 +128,11 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {result ? (
         <div className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-3 text-sm text-emerald-900">
-          <p>
-            {text.result.sent} (status: {result.command.status}, duty: {result.command.payload.duty.toFixed(2)}).
-          </p>
-          <p>
-            {text.result.computedState}: {result.computed.state}, {text.result.effectiveMode}: {result.computed.effectiveMode},{" "}
-            {text.result.rule}: {result.computed.reason}.
-          </p>
-          {result.computed.lowSolarBudget ? <p className="text-amber-700">{text.result.lowSolar}</p> : null}
+          <p className="font-semibold">{text.result.sent}</p>
+          {result.topic ? <p className="mt-1 break-all">{text.result.topic}: {result.topic}</p> : null}
+          <code className="mt-2 block whitespace-pre-wrap break-all rounded-lg bg-white/70 px-2 py-1 font-mono text-[11px] leading-5">
+            {JSON.stringify(result.command.payload, null, 2)}
+          </code>
         </div>
       ) : null}
     </div>

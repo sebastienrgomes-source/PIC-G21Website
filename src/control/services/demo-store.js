@@ -1,5 +1,3 @@
-﻿import { computeDutyCycle } from "../../shared/utils/control";
-
 const ACTIVE_USER_KEY = "pic_control_active_email_v1";
 const STORAGE_PREFIX = "pic_demo_v2";
 
@@ -7,7 +5,7 @@ const BASE_DEVICE_CONFIG = [
   {
     id: "demo-hive-01",
     name: "Hive Norte",
-    device_uid: "BEE-001-ESP32",
+    device_uid: "esp32-001",
     status: "online",
     lastSeenOffsetMin: 1,
     createdAtOffsetHours: 72,
@@ -18,7 +16,7 @@ const BASE_DEVICE_CONFIG = [
   {
     id: "demo-hive-02",
     name: "Hive Sul",
-    device_uid: "BEE-002-ESP32",
+    device_uid: "esp32-002",
     status: "online",
     lastSeenOffsetMin: 3,
     createdAtOffsetHours: 36,
@@ -174,15 +172,10 @@ const makeDefaultCommands = () => {
         id: "demo-hive-01-cmd-1",
         device_id: "demo-hive-01",
         owner_id: "demo-user",
-        command_type: "SET_CONTROL",
+        command_type: "SET_SETPOINT",
         payload: {
-          msgId: "demo-hive-01-msg-1",
-          type: "SET_CONTROL",
-          tSet: 8,
-          mode: "AUTO",
-          duty: 0.2,
-          maxDuty: 0.8,
-          ts: ts - 8 * 60 * 1000,
+          target_temperature_c: 8,
+          automatic_mode: true,
         },
         status: "acked",
         created_at: new Date(ts - 8 * 60 * 1000).toISOString(),
@@ -191,15 +184,9 @@ const makeDefaultCommands = () => {
         id: "demo-hive-01-cmd-2",
         device_id: "demo-hive-01",
         owner_id: "demo-user",
-        command_type: "SET_CONTROL",
+        command_type: "SET_HEATER",
         payload: {
-          msgId: "demo-hive-01-msg-2",
-          type: "SET_CONTROL",
-          tSet: 8.5,
-          mode: "BOOST",
-          duty: 0.8,
-          maxDuty: 0.8,
-          ts: ts - 42 * 60 * 1000,
+          heater_enabled: true,
         },
         status: "acked",
         created_at: new Date(ts - 42 * 60 * 1000).toISOString(),
@@ -210,15 +197,10 @@ const makeDefaultCommands = () => {
         id: "demo-hive-02-cmd-1",
         device_id: "demo-hive-02",
         owner_id: "demo-user",
-        command_type: "SET_CONTROL",
+        command_type: "SET_SETPOINT",
         payload: {
-          msgId: "demo-hive-02-msg-1",
-          type: "SET_CONTROL",
-          tSet: 7.5,
-          mode: "ECO",
-          duty: 0.12,
-          maxDuty: 0.8,
-          ts: ts - 18 * 60 * 1000,
+          target_temperature_c: 7.5,
+          automatic_mode: false,
         },
         status: "acked",
         created_at: new Date(ts - 18 * 60 * 1000).toISOString(),
@@ -471,34 +453,17 @@ export const applyDemoCommand = ({ deviceId, tSet, mode }) => {
   const commands = loadCommands(email);
 
   const currentSettings = getDemoDeviceSettings(deviceId);
-  const latestTelemetry = getDemoTelemetry(deviceId).at(-1);
-
-  const computed = computeDutyCycle({
-    tInternal: latestTelemetry?.t_internal ?? null,
-    tSet,
-    tBand: Number(currentSettings.t_band),
-    maxDuty: Number(currentSettings.max_duty),
-    vBatt: latestTelemetry?.v_batt ?? null,
-    minBattV: Number(currentSettings.min_batt_v),
-    mode,
-    lowSolarBudget: false,
-  });
 
   const payload = {
-    msgId: randomId(),
-    type: "SET_CONTROL",
-    tSet,
-    mode,
-    duty: computed.duty,
-    maxDuty: Number(currentSettings.max_duty),
-    ts: Date.now(),
+    target_temperature_c: tSet,
+    automatic_mode: mode === "AUTO",
   };
 
   const command = {
     id: randomId(),
     device_id: deviceId,
     owner_id: "demo-user",
-    command_type: "SET_CONTROL",
+    command_type: "SET_SETPOINT",
     payload,
     status: "sent",
     created_at: new Date().toISOString(),
@@ -517,11 +482,8 @@ export const applyDemoCommand = ({ deviceId, tSet, mode }) => {
   saveSettings(email, settings);
 
   return {
+    topic: `heatspot/${device.device_uid}/cmd`,
     command,
-    computed: {
-      ...computed,
-      lowSolarBudget: false,
-    },
   };
 };
 

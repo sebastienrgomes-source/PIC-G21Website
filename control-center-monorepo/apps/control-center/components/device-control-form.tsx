@@ -18,7 +18,6 @@ interface Esp32CommandPayload {
   heater_enabled?: boolean;
   automatic_mode?: boolean;
   target_temperature_c?: number;
-  mode?: DeviceMode;
 }
 
 interface CommandResponse {
@@ -34,15 +33,15 @@ interface CommandResponse {
 }
 
 const modeOptions = [
-  { value: 'ECO', label: 'ECO' },
-  { value: 'NORMAL', label: 'NORMAL' },
-  { value: 'BOOST', label: 'BOOST' },
-  { value: 'AUTO', label: 'AUTO' },
+  { value: 'AUTO', label: 'Automatico' },
+  { value: 'MANUAL', label: 'Manual' },
 ];
+
+type ControlMode = 'AUTO' | 'MANUAL';
 
 export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSet }: Props) {
   const [tSet, setTSet] = useState(initialTSet);
-  const [mode, setMode] = useState<DeviceMode>(initialMode);
+  const [mode, setMode] = useState<ControlMode>(initialMode === 'AUTO' ? 'AUTO' : 'MANUAL');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CommandResponse | null>(null);
@@ -73,7 +72,6 @@ export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSe
   const applySetpoint = async () => {
     await sendCommand({
       target_temperature_c: tSet,
-      mode,
       automatic_mode: mode === 'AUTO',
     });
   };
@@ -123,7 +121,7 @@ export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSe
           id="mode"
           options={modeOptions}
           value={mode}
-          onChange={(event) => setMode(event.target.value as DeviceMode)}
+          onChange={(event) => setMode(event.target.value as ControlMode)}
         />
       </div>
 
@@ -134,10 +132,26 @@ export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSe
         <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: false })} variant="outline">
           Desligar aquecedor
         </Button>
-        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ automatic_mode: true })} variant="outline">
+        <Button
+          className="h-11"
+          disabled={busy}
+          onClick={() => {
+            setMode('AUTO');
+            void sendCommand({ automatic_mode: true });
+          }}
+          variant="outline"
+        >
           Modo automatico
         </Button>
-        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ automatic_mode: false })} variant="outline">
+        <Button
+          className="h-11"
+          disabled={busy}
+          onClick={() => {
+            setMode('MANUAL');
+            void sendCommand({ automatic_mode: false });
+          }}
+          variant="outline"
+        >
           Modo manual
         </Button>
       </div>
@@ -149,7 +163,7 @@ export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSe
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {result ? (
         <div className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-3 text-sm text-emerald-900">
-          <p className="font-semibold">Comando MQTT enviado.</p>
+          <p className="font-semibold">Comando enviado para ESP32.</p>
           <p className="mt-1 break-all">Topico: {result.topic}</p>
           <code className="mt-2 block whitespace-pre-wrap break-all rounded-lg bg-white/70 px-2 py-1 font-mono text-[11px] leading-5">
             {JSON.stringify(result.payload, null, 2)}

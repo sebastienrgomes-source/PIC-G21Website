@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MQTT_DEFAULTS } from '@/lib/mqtt-defaults';
 
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -6,7 +7,7 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_MQTT_BROKER_URL: z.string().min(1).optional(),
   NEXT_PUBLIC_MQTT_USER: z.string().min(1).optional(),
   NEXT_PUBLIC_MQTT_PASS: z.string().min(1).optional(),
-  NEXT_PUBLIC_DEVICE_UID: z.string().min(1).default('esp32-001'),
+  NEXT_PUBLIC_DEVICE_UID: z.string().min(1).default(MQTT_DEFAULTS.deviceUid),
 });
 
 const serverEnvSchema = clientEnvSchema.extend({
@@ -26,10 +27,10 @@ export const getClientEnv = () =>
   clientEnvSchema.parse({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_MQTT_BROKER_URL: process.env.NEXT_PUBLIC_MQTT_BROKER_URL,
-    NEXT_PUBLIC_MQTT_USER: process.env.NEXT_PUBLIC_MQTT_USER,
-    NEXT_PUBLIC_MQTT_PASS: process.env.NEXT_PUBLIC_MQTT_PASS,
-    NEXT_PUBLIC_DEVICE_UID: process.env.NEXT_PUBLIC_DEVICE_UID,
+    NEXT_PUBLIC_MQTT_BROKER_URL: process.env.NEXT_PUBLIC_MQTT_BROKER_URL ?? MQTT_DEFAULTS.brokerUrl,
+    NEXT_PUBLIC_MQTT_USER: process.env.NEXT_PUBLIC_MQTT_USER ?? MQTT_DEFAULTS.username,
+    NEXT_PUBLIC_MQTT_PASS: process.env.NEXT_PUBLIC_MQTT_PASS ?? MQTT_DEFAULTS.password,
+    NEXT_PUBLIC_DEVICE_UID: process.env.NEXT_PUBLIC_DEVICE_UID ?? MQTT_DEFAULTS.deviceUid,
   });
 
 export const getServerEnv = () =>
@@ -37,18 +38,18 @@ export const getServerEnv = () =>
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    MQTT_BROKER_URL: process.env.MQTT_BROKER_URL,
-    MQTT_USER: process.env.MQTT_USER,
-    MQTT_PASS: process.env.MQTT_PASS,
-    NEXT_PUBLIC_MQTT_BROKER_URL: process.env.NEXT_PUBLIC_MQTT_BROKER_URL,
-    NEXT_PUBLIC_MQTT_USER: process.env.NEXT_PUBLIC_MQTT_USER,
-    NEXT_PUBLIC_MQTT_PASS: process.env.NEXT_PUBLIC_MQTT_PASS,
-    NEXT_PUBLIC_DEVICE_UID: process.env.NEXT_PUBLIC_DEVICE_UID,
+    MQTT_BROKER_URL: process.env.MQTT_BROKER_URL ?? MQTT_DEFAULTS.brokerUrl,
+    MQTT_USER: process.env.MQTT_USER ?? MQTT_DEFAULTS.username,
+    MQTT_PASS: process.env.MQTT_PASS ?? MQTT_DEFAULTS.password,
+    NEXT_PUBLIC_MQTT_BROKER_URL: process.env.NEXT_PUBLIC_MQTT_BROKER_URL ?? MQTT_DEFAULTS.brokerUrl,
+    NEXT_PUBLIC_MQTT_USER: process.env.NEXT_PUBLIC_MQTT_USER ?? MQTT_DEFAULTS.username,
+    NEXT_PUBLIC_MQTT_PASS: process.env.NEXT_PUBLIC_MQTT_PASS ?? MQTT_DEFAULTS.password,
+    NEXT_PUBLIC_DEVICE_UID: process.env.NEXT_PUBLIC_DEVICE_UID ?? MQTT_DEFAULTS.deviceUid,
   });
 
 export const getMqttServerEnv = () =>
   mqttServerEnvSchema.parse({
-    MQTT_BROKER_URL: process.env.MQTT_BROKER_URL,
-    MQTT_USER: process.env.MQTT_USER,
-    MQTT_PASS: process.env.MQTT_PASS,
+    MQTT_BROKER_URL: process.env.MQTT_BROKER_URL ?? MQTT_DEFAULTS.brokerUrl,
+    MQTT_USER: process.env.MQTT_USER ?? MQTT_DEFAULTS.username,
+    MQTT_PASS: process.env.MQTT_PASS ?? MQTT_DEFAULTS.password,
   });

@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { deviceTopic } from '@pic/shared';
 import { useMqttDevice, type MqttDeviceMessage } from '@/lib/use-mqtt-device';
+import { MQTT_DEFAULTS } from '@/lib/mqtt-defaults';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -38,7 +39,7 @@ const formatUptime = (seconds: number | null) => {
 
 const readMetric = (telemetry: MqttDeviceMessage | null, key: string): unknown => telemetry?.[key];
 
-export function MqttDevicePanel({ deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? 'esp32-001' }: Props) {
+export function MqttDevicePanel({ deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? MQTT_DEFAULTS.deviceUid }: Props) {
   const { connected, telemetry, status, lastMessageAt, error } = useMqttDevice(deviceUid);
 
   const metrics = useMemo(() => {
@@ -48,7 +49,8 @@ export function MqttDevicePanel({ deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID
     const heaterEnabled = asBoolean(readMetric(telemetry, 'heater_enabled'));
     const automaticMode = asBoolean(readMetric(telemetry, 'automatic_mode'));
     const ip = asText(readMetric(telemetry, 'ip'));
-    const rssi = asNumber(readMetric(telemetry, 'rssi_dbm'));
+    const rssi =
+      asNumber(readMetric(telemetry, 'wifi_rssi_dbm')) ?? asNumber(readMetric(telemetry, 'rssi_dbm'));
     const uptime = asNumber(readMetric(telemetry, 'uptime_s'));
     const wifiStatus = asText(readMetric(telemetry, 'wifi_status')) ?? asText(status?.status) ?? asText(status?.wifi_status);
 
@@ -69,7 +71,7 @@ export function MqttDevicePanel({ deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID
     { label: 'Temperatura', value: formatNumber(metrics.temperature, ' C') },
     { label: 'Humidade', value: formatNumber(metrics.humidity, '%') },
     { label: 'Setpoint', value: formatNumber(metrics.target, ' C') },
-    { label: 'Aquecedor', value: formatBool(metrics.heaterEnabled, 'ON', 'OFF') },
+    { label: 'Aquecedor', value: formatBool(metrics.heaterEnabled, 'Ligado', 'Desligado') },
     { label: 'Modo', value: formatBool(metrics.automaticMode, 'Automatico', 'Manual') },
     { label: 'IP ESP32', value: metrics.ip ?? '--' },
     { label: 'RSSI', value: metrics.rssi === null ? '--' : `${metrics.rssi} dBm` },

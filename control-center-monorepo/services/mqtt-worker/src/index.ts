@@ -79,7 +79,7 @@ const handleTelemetry = async (topic: string, payloadRaw: string) => {
   const telemetryTsIso = new Date(telemetry.ts ?? Date.now()).toISOString();
   const tInternal = telemetry.tInternal ?? telemetry.temperature_c ?? null;
   const humidity = telemetry.humidity ?? telemetry.humidity_percent ?? null;
-  const rssi = telemetry.rssi ?? telemetry.rssi_dbm ?? null;
+  const rssi = telemetry.rssi ?? telemetry.wifi_rssi_dbm ?? telemetry.rssi_dbm ?? null;
 
   const { error: insertError } = await supabase.from('device_telemetry').insert({
     device_id: deviceId,

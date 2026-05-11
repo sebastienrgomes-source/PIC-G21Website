@@ -38,8 +38,10 @@ const normalizeEsp32Payload = (body: CommandRequest): CommandPayload => {
   if (body.target_temperature_c !== undefined) payload.target_temperature_c = body.target_temperature_c;
   if (body.tSet !== undefined) payload.target_temperature_c = body.tSet;
   if (body.mode !== undefined) {
-    payload.mode = body.mode;
     if (body.automatic_mode === undefined) payload.automatic_mode = body.mode === 'AUTO';
+  }
+  if (payload.target_temperature_c !== undefined && payload.automatic_mode === undefined) {
+    payload.automatic_mode = false;
   }
 
   const parsed = commandPayloadSchema.safeParse(payload);

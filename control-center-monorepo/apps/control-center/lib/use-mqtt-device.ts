@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import mqtt from 'mqtt';
 import { deviceTopic } from '@pic/shared';
+import { MQTT_DEFAULTS } from '@/lib/mqtt-defaults';
 
 export type MqttDeviceMessage = Record<string, unknown>;
 
@@ -31,7 +32,7 @@ const parseJsonObject = (raw: string): MqttDeviceMessage => {
   return { value: parsed };
 };
 
-export function useMqttDevice(deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? 'esp32-001'): MqttDeviceState {
+export function useMqttDevice(deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? MQTT_DEFAULTS.deviceUid): MqttDeviceState {
   const [state, setState] = useState<MqttDeviceState>(defaultState);
 
   const topics = useMemo(
@@ -43,9 +44,9 @@ export function useMqttDevice(deviceUid = process.env.NEXT_PUBLIC_DEVICE_UID ?? 
   );
 
   useEffect(() => {
-    const brokerUrl = process.env.NEXT_PUBLIC_MQTT_BROKER_URL;
-    const username = process.env.NEXT_PUBLIC_MQTT_USER;
-    const password = process.env.NEXT_PUBLIC_MQTT_PASS;
+    const brokerUrl = process.env.NEXT_PUBLIC_MQTT_BROKER_URL ?? MQTT_DEFAULTS.brokerUrl;
+    const username = process.env.NEXT_PUBLIC_MQTT_USER ?? MQTT_DEFAULTS.username;
+    const password = process.env.NEXT_PUBLIC_MQTT_PASS ?? MQTT_DEFAULTS.password;
 
     if (!brokerUrl) {
       setState((current) => ({

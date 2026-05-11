@@ -17,15 +17,18 @@ export const commandPayloadSchema = z.object({
   heater_enabled: z.boolean().optional(),
   automatic_mode: z.boolean().optional(),
   target_temperature_c: z.number().min(0).max(35).optional(),
-  mode: modeSchema.optional(),
-}).refine(
-  (payload) =>
-    payload.heater_enabled !== undefined ||
-    payload.automatic_mode !== undefined ||
-    payload.target_temperature_c !== undefined ||
-    payload.mode !== undefined,
-  'Command payload must include at least one ESP32 command field',
-);
+})
+  .refine(
+    (payload) =>
+      payload.heater_enabled !== undefined ||
+      payload.automatic_mode !== undefined ||
+      payload.target_temperature_c !== undefined,
+    'Command payload must include at least one ESP32 command field',
+  )
+  .refine(
+    (payload) => payload.target_temperature_c === undefined || payload.automatic_mode !== undefined,
+    'Setpoint commands must include automatic_mode',
+  );
 export type CommandPayload = z.infer<typeof commandPayloadSchema>;
 
 export const telemetryPayloadSchema = z.object({
@@ -44,6 +47,7 @@ export const telemetryPayloadSchema = z.object({
   target_temperature_c: z.number().optional(),
   heater_enabled: z.boolean().optional(),
   automatic_mode: z.boolean().optional(),
+  wifi_rssi_dbm: z.number().optional(),
   rssi_dbm: z.number().optional(),
   uptime_s: z.number().optional(),
 }).passthrough();
