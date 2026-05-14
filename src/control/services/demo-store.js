@@ -1,5 +1,8 @@
+import { publishCommand } from "./mqtt-client";
+
 const ACTIVE_USER_KEY = "pic_control_active_email_v1";
 const STORAGE_PREFIX = "pic_demo_v2";
+const MQTT_FAILURE_MESSAGE = "Falha ao publicar no MQTT.";
 
 const BASE_DEVICE_CONFIG = [
   {
@@ -376,6 +379,13 @@ export const getDemoCommands = (deviceId) => {
   return commands[deviceId] ?? [];
 };
 
+const commandTypeForPayload = (payload) => {
+  if (payload.heater_enabled !== undefined) return "SET_HEATER";
+  if (payload.target_temperature_c !== undefined) return "SET_SETPOINT";
+  if (payload.automatic_mode !== undefined) return "SET_AUTOMATIC_MODE";
+  return "ESP32_CONTROL";
+};
+
 export const createDemoPairing = ({ device_uid: rawUid, name: rawName }) => {
   const email = requireActiveUserEmail();
 
@@ -441,7 +451,7 @@ export const createDemoPairing = ({ device_uid: rawUid, name: rawName }) => {
   };
 };
 
-export const applyDemoCommand = ({ deviceId, tSet, mode }) => {
+export const applyDemoCommand = async ({ deviceId, payload, tSet, mode }) => {
   const email = requireActiveUserEmail();
 
   const device = getDemoDeviceById(deviceId);
@@ -454,37 +464,58 @@ export const applyDemoCommand = ({ deviceId, tSet, mode }) => {
 
   const currentSettings = getDemoDeviceSettings(deviceId);
 
-  const payload = {
+  const esp32Payload = payload ?? {
     target_temperature_c: tSet,
     automatic_mode: mode === "AUTO",
   };
 
-  const command = {
+  const makeCommand = (status, commandPayload) => ({
     id: randomId(),
     device_id: deviceId,
     owner_id: "demo-user",
-    command_type: "SET_SETPOINT",
-    payload,
-    status: "sent",
+    command_type: commandTypeForPayload(commandPayload),
+    payload: commandPayload,
+    status,
     created_at: new Date().toISOString(),
-  };
+  });
 
-  commands[deviceId] = [command, ...(commands[deviceId] ?? [])].slice(0, 20);
+  try {
+    const published = await publishCommand(esp32Payload);
+    const command = makeCommand("sent", published.payload);
 
-  settings[deviceId] = {
-    ...currentSettings,
-    mode,
-    t_set: tSet,
-    updated_at: new Date().toISOString(),
-  };
+    commands[deviceId] = [command, ...(commands[deviceId] ?? [])].slice(0, 20);
 
-  saveCommands(email, commands);
-  saveSettings(email, settings);
+    const shouldUpdateSettings =
+      published.payload.target_temperature_c !== undefined || published.payload.automatic_mode !== undefined;
 
-  return {
-    topic: `heatspot/${device.device_uid}/cmd`,
-    command,
-  };
+    if (shouldUpdateSettings) {
+      settings[deviceId] = {
+        ...currentSettings,
+        mode: published.payload.automatic_mode === undefined
+          ? currentSettings.mode
+          : published.payload.automatic_mode
+            ? "AUTO"
+            : "MANUAL",
+        t_set: published.payload.target_temperature_c ?? currentSettings.t_set,
+        updated_at: new Date().toISOString(),
+      };
+      saveSettings(email, settings);
+    }
+
+    saveCommands(email, commands);
+
+    return {
+      ok: true,
+      topic: published.topic,
+      payload: published.payload,
+      command,
+    };
+  } catch {
+    const command = makeCommand("failed", esp32Payload);
+    commands[deviceId] = [command, ...(commands[deviceId] ?? [])].slice(0, 20);
+    saveCommands(email, commands);
+    throw new Error(MQTT_FAILURE_MESSAGE);
+  }
 };
 
 export const resetDemoStore = () => {

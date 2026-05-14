@@ -140,10 +140,15 @@ export default function DevicePage() {
 
   const latest = telemetry.at(-1) ?? null;
 
-  const handleApplyCommand = async ({ deviceId, tSet, mode }) => {
-    const result = applyDemoCommand({ deviceId, tSet, mode });
-    setRefreshToken((value) => value + 1);
-    return result;
+  const handleApplyCommand = async ({ deviceId, payload }) => {
+    try {
+      const result = await applyDemoCommand({ deviceId, payload });
+      setRefreshToken((value) => value + 1);
+      return result;
+    } catch (error) {
+      setRefreshToken((value) => value + 1);
+      throw error;
+    }
   };
 
   return (

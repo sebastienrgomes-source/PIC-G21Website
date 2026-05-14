@@ -6,18 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { publishCommand, type Esp32CommandPayload } from '@/lib/browser-mqtt-client';
 
 interface Props {
   deviceId: string;
   deviceUid?: string;
   initialMode: DeviceMode;
   initialTSet: number;
-}
-
-interface Esp32CommandPayload {
-  heater_enabled?: boolean;
-  automatic_mode?: boolean;
-  target_temperature_c?: number;
 }
 
 interface CommandResponse {
@@ -39,7 +34,7 @@ const modeOptions = [
 
 type ControlMode = 'AUTO' | 'MANUAL';
 
-export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSet }: Props) {
+export function DeviceControlForm({ initialMode, initialTSet }: Props) {
   const [tSet, setTSet] = useState(initialTSet);
   const [mode, setMode] = useState<ControlMode>(initialMode === 'AUTO' ? 'AUTO' : 'MANUAL');
   const [busy, setBusy] = useState(false);
@@ -52,18 +47,20 @@ export function DeviceControlForm({ deviceId, deviceUid, initialMode, initialTSe
     setResult(null);
 
     try {
-      const response = await fetch(`/api/devices/${deviceUid ?? deviceId}/command`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(command),
+      const published = await publishCommand(command);
+      setResult({
+        ok: true,
+        topic: published.topic,
+        payload: published.payload,
+        command: {
+          id: crypto.randomUUID(),
+          status: 'sent',
+          payload: published.payload,
+          created_at: new Date().toISOString(),
+        },
       });
-
-      const payload = (await response.json()) as CommandResponse | { error: string };
-      if (!response.ok) throw new Error('error' in payload ? payload.error : 'Falha ao enviar comando');
-
-      setResult(payload as CommandResponse);
-    } catch (applyError) {
-      setError(applyError instanceof Error ? applyError.message : 'Erro ao enviar comando');
+    } catch {
+      setError('Falha ao publicar no MQTT.');
     } finally {
       setBusy(false);
     }

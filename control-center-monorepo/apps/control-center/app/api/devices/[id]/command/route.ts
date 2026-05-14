@@ -56,6 +56,15 @@ const commandTypeForPayload = (payload: CommandPayload): string => {
   return 'ESP32_CONTROL';
 };
 
+const mqttErrorResponse = (error: unknown) =>
+  NextResponse.json(
+    {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Falha ao publicar no MQTT.',
+    },
+    { status: 502 },
+  );
+
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   const parsedBody = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsedBody.success) return jsonError(parsedBody.error.message, 400);
@@ -90,10 +99,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         },
       });
     } catch (mqttError) {
-      return jsonError(
-        mqttError instanceof Error ? `Falha MQTT: ${mqttError.message}` : 'Falha MQTT ao publicar comando.',
-        502,
-      );
+      return mqttErrorResponse(mqttError);
     }
   }
 
@@ -124,39 +130,46 @@ export async function POST(request: Request, { params }: { params: { id: string 
   if (!device || device.owner_id !== user.id) return jsonError('Device nao encontrado.', 404);
 
   const service = createServiceRoleClient();
+
+  let published: Awaited<ReturnType<typeof publishDeviceCommand>>;
+  try {
+    published = await publishDeviceCommand(device.device_uid, esp32Payload);
+  } catch (mqttError) {
+    await service
+      .from('device_commands')
+      .insert({
+        device_id: device.id,
+        owner_id: user.id,
+        command_type: commandTypeForPayload(esp32Payload),
+        payload: esp32Payload,
+        status: 'failed',
+      });
+
+    return mqttErrorResponse(mqttError);
+  }
+
   const { data: command, error: commandError } = await service
     .from('device_commands')
     .insert({
       device_id: device.id,
       owner_id: user.id,
       command_type: commandTypeForPayload(esp32Payload),
-      payload: esp32Payload,
-      status: 'queued',
+      payload: published.payload,
+      status: 'sent',
     })
     .select('id, status, payload, created_at')
     .single();
 
   if (commandError || !command) return jsonError(commandError?.message ?? 'Failed to create command', 500);
 
-  try {
-    const published = await publishDeviceCommand(device.device_uid, esp32Payload);
-    await service.from('device_commands').update({ status: 'sent' }).eq('id', command.id);
-
-    return NextResponse.json({
-      ok: true,
-      topic: published.topic,
+  return NextResponse.json({
+    ok: true,
+    topic: published.topic,
+    payload: published.payload,
+    command: {
+      ...command,
+      status: 'sent',
       payload: published.payload,
-      command: {
-        ...command,
-        status: 'sent',
-        payload: published.payload,
-      },
-    });
-  } catch (mqttError) {
-    await service.from('device_commands').update({ status: 'failed' }).eq('id', command.id);
-    return jsonError(
-      mqttError instanceof Error ? `Falha MQTT: ${mqttError.message}` : 'Falha MQTT ao publicar comando.',
-      502,
-    );
-  }
+    },
+  });
 }

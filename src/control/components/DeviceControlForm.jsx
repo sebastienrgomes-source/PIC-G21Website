@@ -19,9 +19,13 @@ const copy = {
     actions: {
       applying: "A aplicar...",
       apply: "Aplicar",
+      heaterOn: "Ligar aquecedor",
+      heaterOff: "Desligar aquecedor",
+      autoMode: "Modo automatico",
+      manualMode: "Modo manual",
     },
     errors: {
-      fallback: "Erro ao enviar comando",
+      fallback: "Falha ao publicar no MQTT.",
     },
     result: {
       sent: "Comando enviado para ESP32.",
@@ -36,9 +40,13 @@ const copy = {
     actions: {
       applying: "Applying...",
       apply: "Apply",
+      heaterOn: "Turn heater on",
+      heaterOff: "Turn heater off",
+      autoMode: "Automatic mode",
+      manualMode: "Manual mode",
     },
     errors: {
-      fallback: "Error sending command",
+      fallback: "Falha ao publicar no MQTT.",
     },
     result: {
       sent: "Command sent to ESP32.",
@@ -57,19 +65,26 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
-  const apply = async () => {
+  const sendCommand = async (payload) => {
     setBusy(true);
     setError(null);
     setResult(null);
 
     try {
-      const payload = await onApply({ deviceId, tSet, mode });
-      setResult(payload);
+      const response = await onApply({ deviceId, payload });
+      setResult(response);
     } catch (applyError) {
       setError(applyError instanceof Error ? applyError.message : text.errors.fallback);
     } finally {
       setBusy(false);
     }
+  };
+
+  const apply = async () => {
+    await sendCommand({
+      target_temperature_c: tSet,
+      automatic_mode: mode === "AUTO",
+    });
   };
 
   return (
@@ -121,6 +136,37 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
         />
       </div>
 
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: true })}>
+          {text.actions.heaterOn}
+        </Button>
+        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: false })} variant="outline">
+          {text.actions.heaterOff}
+        </Button>
+        <Button
+          className="h-11"
+          disabled={busy}
+          onClick={() => {
+            setMode("AUTO");
+            void sendCommand({ automatic_mode: true });
+          }}
+          variant="outline"
+        >
+          {text.actions.autoMode}
+        </Button>
+        <Button
+          className="h-11"
+          disabled={busy}
+          onClick={() => {
+            setMode("MANUAL");
+            void sendCommand({ automatic_mode: false });
+          }}
+          variant="outline"
+        >
+          {text.actions.manualMode}
+        </Button>
+      </div>
+
       <Button className="h-11 w-full" disabled={busy} onClick={apply}>
         {busy ? text.actions.applying : text.actions.apply}
       </Button>
@@ -131,7 +177,7 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
           <p className="font-semibold">{text.result.sent}</p>
           {result.topic ? <p className="mt-1 break-all">{text.result.topic}: {result.topic}</p> : null}
           <code className="mt-2 block whitespace-pre-wrap break-all rounded-lg bg-white/70 px-2 py-1 font-mono text-[11px] leading-5">
-            {JSON.stringify(result.command.payload, null, 2)}
+            {JSON.stringify(result.payload, null, 2)}
           </code>
         </div>
       ) : null}
