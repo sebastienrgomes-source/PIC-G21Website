@@ -29,6 +29,7 @@ const baseMembers = [
     name: "Vasco",
     image: new URL("../Vasco.jpeg", import.meta.url).href,
     linkedin: null,
+    showLinkedinSoon: false,
   },
 ];
 
@@ -44,11 +45,11 @@ export default function Team() {
       linkedinLabelPrefix: "Abrir LinkedIn de",
       linkedinSoon: "LinkedIn em breve",
       roles: {
-        "Sébastien": "Project Manager and Communication",
+        "Sébastien": "Project Manager + App DashBoard integrado + Base de dados",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
 
-        Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
+        Catarina: "IoT + DataBase + Comunicação",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
     },
@@ -60,11 +61,11 @@ export default function Team() {
       linkedinLabelPrefix: "Open LinkedIn profile of",
       linkedinSoon: "LinkedIn coming soon",
       roles: {
-        "Sébastien": "Project Manager and Communication",
+        "Sébastien": "Project Manager + App DashBoard integrado + Base de dados",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
 
-        Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
+        Catarina: "IoT + DataBase + Comunicação",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
     },
@@ -76,11 +77,11 @@ export default function Team() {
       linkedinLabelPrefix: "Ouvrir le LinkedIn de",
       linkedinSoon: "LinkedIn bientôt disponible",
       roles: {
-        "Sébastien": "Project Manager and Communication",
+        "Sébastien": "Project Manager + App DashBoard integrado + Base de dados",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
 
-        Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
+        Catarina: "IoT + DataBase + Comunicação",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
     },
@@ -92,11 +93,11 @@ export default function Team() {
       linkedinLabelPrefix: "Abrir LinkedIn de",
       linkedinSoon: "LinkedIn próximamente",
       roles: {
-        "Sébastien": "Project Manager and Communication",
+        "Sébastien": "Project Manager + App DashBoard integrado + Base de dados",
         Leonel: "Power Eletronics (Heater Driver + Proteções)",
         Nicollas: "Energy System (PV + Battery + BMS + Otimização de energia)",
 
-        Catarina: "IoT + DataBase + App DashBoard integrado (opcional)",
+        Catarina: "IoT + DataBase + Comunicação",
         Vasco: "Embedded Control (Firmware + Estados + Low-power)",
       },
     },
@@ -127,7 +128,7 @@ export default function Team() {
               <div className="team-card-body">
                 <h3 className="team-name">{member.name}</h3>
                 <p className="team-role">{member.role}</p>
-                {!member.linkedin ? (
+                {!member.linkedin && member.showLinkedinSoon !== false ? (
                   <p className="team-link-soon" aria-label={text.linkedinSoon}>
                     {text.linkedinSoon}
                   </p>

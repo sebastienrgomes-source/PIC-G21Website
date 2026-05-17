@@ -6,12 +6,22 @@ import { roadmapFrMilestones } from "../data/roadmap.fr";
 import { roadmapEsMilestones } from "../data/roadmap.es";
 import CompanyFeedbackModal from "./CompanyFeedbackModal";
 import prototypeImg from "../../../Ideia de Protótipo.png";
+import bloco1EnergiaImg from "../../../Bloco1_Energia.jpeg";
+import bloco3SensoresImg from "../../../Bloco3_Sensores.png";
+import prototypeDraftImg from "../../../Protótipo_Rascunho_Final.jpeg";
 import summerBerryLogo from "./Summer-berry-company.png";
+
+const prototypeBlockImages = {
+  bloco1Energia: bloco1EnergiaImg,
+  bloco3Sensores: bloco3SensoresImg,
+  prototypeDraft: prototypeDraftImg,
+};
 
 export default function Roadmap() {
   const { language } = useLanguage();
   const [selectedId, setSelectedId] = useState(null);
   const [modalCompany, setModalCompany] = useState(null);
+  const [selectedPrototypeBlock, setSelectedPrototypeBlock] = useState(null);
 
   const copy = {
     pt: {
@@ -19,10 +29,15 @@ export default function Roadmap() {
       title: "Plano de Execução",
       intro: "Roadmap estruturado com um ciclo",
       introStrong: "iterativo de construir, testar e melhorar.",
-      currentBadge: "Em fase final",
+      currentBadge: "Em andamento",
       detailLabel: "Detalhes da etapa {step}",
       workItemsTitle: "Tarefas de trabalho",
       partnersTitle: "Entidades envolvidas",
+      technicalSummaryTitle: "Resumo técnico",
+      componentsTitle: "Componentes",
+      imagePlaceholder: "Imagem a adicionar após montagem",
+      blockLabel: "Bloco",
+      closeLabel: "Fechar",
       emptyMessage:
         "Nenhum detalhe aberto por defeito. Clica num nó numerado para abrir uma etapa.",
       milestones: roadmapPtMilestones,
@@ -32,10 +47,15 @@ export default function Roadmap() {
       title: "Execution Plan",
       intro: "Structured development roadmap with an",
       introStrong: "iterative build-test-improve cycle.",
-      currentBadge: "Now finishing",
+      currentBadge: "In progress",
       detailLabel: "Step {step} details",
       workItemsTitle: "Work items",
       partnersTitle: "Involved parties",
+      technicalSummaryTitle: "Technical summary",
+      componentsTitle: "Components",
+      imagePlaceholder: "Image to be added after assembly",
+      blockLabel: "Block",
+      closeLabel: "Close",
       emptyMessage: "No details open by default. Click a numbered node to open one step.",
       milestones: roadmapEnMilestones,
     },
@@ -44,10 +64,15 @@ export default function Roadmap() {
       title: "Plan d'Exécution",
       intro: "Feuille de route structurée avec un cycle",
       introStrong: "itératif de construire, tester et améliorer.",
-      currentBadge: "En finalisation",
+      currentBadge: "En cours",
       detailLabel: "Détails de l'étape {step}",
       workItemsTitle: "Tâches",
       partnersTitle: "Parties impliquées",
+      technicalSummaryTitle: "Résumé technique",
+      componentsTitle: "Composants",
+      imagePlaceholder: "Image à ajouter après montage",
+      blockLabel: "Bloc",
+      closeLabel: "Fermer",
       emptyMessage:
         "Aucun détail ouvert par défaut. Cliquez sur un nœud numéroté pour ouvrir une étape.",
       milestones: roadmapFrMilestones,
@@ -57,10 +82,15 @@ export default function Roadmap() {
       title: "Plan de Ejecución",
       intro: "Hoja de ruta estructurada con un ciclo",
       introStrong: "iterativo de construir, probar y mejorar.",
-      currentBadge: "En fase final",
+      currentBadge: "En curso",
       detailLabel: "Detalles de la etapa {step}",
       workItemsTitle: "Tareas",
       partnersTitle: "Partes involucradas",
+      technicalSummaryTitle: "Resumen técnico",
+      componentsTitle: "Componentes",
+      imagePlaceholder: "Imagen por añadir después del montaje",
+      blockLabel: "Bloque",
+      closeLabel: "Cerrar",
       emptyMessage:
         "No hay detalles abiertos por defecto. Haz clic en un nodo numerado para abrir una etapa.",
       milestones: roadmapEsMilestones,
@@ -72,6 +102,10 @@ export default function Roadmap() {
 
   const selectedMilestone =
     milestones.find((milestone) => milestone.id === selectedId) ?? null;
+  const prototypeBlocks = selectedMilestone?.prototypeBlocks ?? [];
+  const regularPrototypeBlocks = prototypeBlocks.filter((block) => !block.isCentral);
+  const centralPrototypeBlock =
+    prototypeBlocks.find((block) => block.isCentral) ?? null;
 
   const closeModal = useCallback(() => setModalCompany(null), []);
 
@@ -140,7 +174,49 @@ export default function Roadmap() {
                 </p>
               </div>
 
-              {selectedMilestone.id === "hardware" ? (
+              {selectedMilestone.prototypeBlocks ? (
+                <div className="prototype-blocks-wrapper">
+                  <div className="prototype-blocks-grid">
+                    {regularPrototypeBlocks.map((block) => (
+                      <button
+                        key={block.id}
+                        type="button"
+                        className="prototype-block-card"
+                        onClick={() => setSelectedPrototypeBlock(block)}
+                      >
+                        <span className="prototype-block-number">{block.number}</span>
+                        <span className="prototype-block-title">{block.title}</span>
+                        <span className="prototype-block-description">{block.description}</span>
+                        <span className={`prototype-block-status ${block.phaseTone}`}>
+                          {block.phaseLabel}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {centralPrototypeBlock ? (
+                    <button
+                      type="button"
+                      className="prototype-central-node"
+                      onClick={() => setSelectedPrototypeBlock(centralPrototypeBlock)}
+                      aria-label={centralPrototypeBlock.title}
+                    >
+                      <span className="prototype-central-node-number">
+                        {centralPrototypeBlock.number}
+                      </span>
+                      <span className="prototype-central-node-title">
+                        {centralPrototypeBlock.title}
+                      </span>
+                      <span className="prototype-central-node-description">
+                        {centralPrototypeBlock.description}
+                      </span>
+                      <span className={`prototype-block-status ${centralPrototypeBlock.phaseTone}`}>
+                        {centralPrototypeBlock.phaseLabel}
+                      </span>
+                    </button>
+                  ) : null}
+                </div>
+              ) : selectedMilestone.id === "hardware" ? (
                 /* Hardware: texto à esquerda, imagem à direita */
                 <div className="execution-hardware-grid">
                   <div>
@@ -244,6 +320,106 @@ export default function Roadmap() {
       {modalCompany ? (
         <CompanyFeedbackModal company={modalCompany} onClose={closeModal} />
       ) : null}
+
+      {selectedPrototypeBlock ? (
+        <PrototypeBlockModal
+          block={selectedPrototypeBlock}
+          imageSrc={
+            selectedPrototypeBlock.imageKey
+              ? prototypeBlockImages[selectedPrototypeBlock.imageKey]
+              : null
+          }
+          imagePlaceholder={text.imagePlaceholder}
+          technicalSummaryTitle={text.technicalSummaryTitle}
+          componentsTitle={text.componentsTitle}
+          blockLabel={text.blockLabel}
+          closeLabel={text.closeLabel}
+          onClose={() => setSelectedPrototypeBlock(null)}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function PrototypeBlockModal({
+  block,
+  imageSrc,
+  imagePlaceholder,
+  technicalSummaryTitle,
+  componentsTitle,
+  blockLabel,
+  closeLabel,
+  onClose,
+}) {
+  return (
+    <div
+      className="prototype-block-modal-backdrop"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        className="prototype-block-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`prototype-block-modal-title-${block.id}`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="prototype-block-modal-close"
+          onClick={onClose}
+          aria-label={closeLabel}
+        >
+          ×
+        </button>
+
+        <div className="prototype-block-modal-header">
+          <div>
+            <p className="prototype-block-modal-kicker">
+              {blockLabel} {block.number}
+            </p>
+            <h3 id={`prototype-block-modal-title-${block.id}`}>{block.title}</h3>
+          </div>
+          <span className={`prototype-block-status ${block.phaseTone}`}>
+            {block.phaseLabel}
+          </span>
+        </div>
+
+        {imageSrc ? (
+          <img
+            src={imageSrc}
+            alt={block.imageAlt ?? block.title}
+            className="prototype-block-modal-image"
+          />
+        ) : (
+          <div className="prototype-block-placeholder">{imagePlaceholder}</div>
+        )}
+
+        <div className="prototype-block-modal-content">
+          <section>
+            <h4>{technicalSummaryTitle}</h4>
+            <p>{block.summary}</p>
+          </section>
+
+          <section>
+            <h4>{componentsTitle}</h4>
+            <ul>
+              {block.components.map((component) => (
+                <li key={component}>{component}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section>
+            <h4>{block.workTitle}</h4>
+            <ul>
+              {block.workItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
   );
 }
