@@ -15,48 +15,62 @@ const copy = {
     noData: "Sem telemetria nas ultimas 24h.",
     tempLine: "Temp interna (C)",
     dutyLine: "Duty (%)",
+    targetLine: "Target Temperature (C)",
   },
   en: {
     noData: "No telemetry for the last 24h.",
     tempLine: "Internal temp (C)",
     dutyLine: "Duty (%)",
+    targetLine: "Target Temperature (C)",
   },
 };
 
-export function TelemetryChart({ points }) {
+export function TelemetryChart({ points, showDuty = true, targetTemperature }) {
   const { language } = useLanguage();
   const text = copy[language] ?? copy.en;
+  const hasTarget = Number.isFinite(Number(targetTemperature));
 
   const data = points.map((point) => ({
     ...point,
     time: new Date(point.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     dutyPercent: point.duty !== null ? Math.round(point.duty * 100) : null,
+    targetTemperature: hasTarget ? Number(targetTemperature) : null,
   }));
 
   if (data.length === 0) {
-    return <p className="rounded-xl border border-blue-100/80 bg-[#f5f8ff] p-3 text-sm text-[#3e5186]">{text.noData}</p>;
+    return <p className="control-muted-box">{text.noData}</p>;
   }
 
   return (
-    <div className="h-80 w-full rounded-2xl border border-blue-100/80 bg-[#f8faff] p-2">
+    <div className="control-chart-frame">
       <ResponsiveContainer height="100%" width="100%">
-        <LineChart data={data} margin={{ top: 14, right: 10, left: -10, bottom: 4 }}>
-          <CartesianGrid stroke="#dbe4ff" strokeDasharray="3 3" />
-          <XAxis dataKey="time" minTickGap={24} tick={{ fill: "#3a4f86", fontSize: 12 }} tickLine={false} />
-          <YAxis yAxisId="temp" domain={["auto", "auto"]} tick={{ fill: "#3a4f86", fontSize: 12 }} tickLine={false} />
+        <LineChart data={data} margin={{ top: 18, right: 14, left: -12, bottom: 4 }}>
+          <CartesianGrid stroke="#dce4ef" strokeDasharray="4 4" vertical={false} />
+          <XAxis axisLine={{ stroke: "#b9c6d9" }} dataKey="time" minTickGap={28} tick={{ fill: "#0c1938", fontSize: 12 }} tickLine={false} />
           <YAxis
-            yAxisId="duty"
-            orientation="right"
-            domain={[0, 100]}
-            tick={{ fill: "#3a4f86", fontSize: 12 }}
+            axisLine={false}
+            domain={["auto", "auto"]}
+            tick={{ fill: "#0c1938", fontSize: 12 }}
+            tickFormatter={(value) => `${value}C`}
             tickLine={false}
+            yAxisId="temp"
           />
+          {showDuty ? (
+            <YAxis
+              axisLine={false}
+              domain={[0, 100]}
+              orientation="right"
+              tick={{ fill: "#53617d", fontSize: 12 }}
+              tickLine={false}
+              yAxisId="duty"
+            />
+          ) : null}
           <Tooltip
             contentStyle={{
               borderRadius: "12px",
-              borderColor: "#d3defe",
+              borderColor: "#e4eaf3",
               backgroundColor: "#ffffff",
-              boxShadow: "0 10px 24px rgba(13,33,88,.13)",
+              boxShadow: "0 12px 30px rgba(28,48,85,.12)",
             }}
           />
           <Legend wrapperStyle={{ fontSize: "12px" }} />
@@ -70,16 +84,31 @@ export function TelemetryChart({ points }) {
             strokeWidth={2.4}
             connectNulls
           />
-          <Line
-            yAxisId="duty"
-            type="stepAfter"
-            dataKey="dutyPercent"
-            name={text.dutyLine}
-            stroke="#1f6bff"
-            dot={false}
-            strokeWidth={2.4}
-            connectNulls
-          />
+          {hasTarget ? (
+            <Line
+              connectNulls
+              dataKey="targetTemperature"
+              dot={false}
+              name={text.targetLine}
+              stroke="#064bc4"
+              strokeDasharray="8 6"
+              strokeWidth={2.4}
+              type="monotone"
+              yAxisId="temp"
+            />
+          ) : null}
+          {showDuty ? (
+            <Line
+              yAxisId="duty"
+              type="stepAfter"
+              dataKey="dutyPercent"
+              name={text.dutyLine}
+              stroke="#1f6bff"
+              dot={false}
+              strokeWidth={2.4}
+              connectNulls
+            />
+          ) : null}
         </LineChart>
       </ResponsiveContainer>
     </div>

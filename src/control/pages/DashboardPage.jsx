@@ -1,325 +1,490 @@
-﻿import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useLanguage } from "../../marketing/context/LanguageContext";
+import { useAuth } from "../auth/AuthContext";
+import heatSpotLogo from "../assets/heatspot-logo-reference.png";
 import { AddDeviceForm } from "../components/AddDeviceForm";
+import { DeviceControlForm } from "../components/DeviceControlForm";
 import { SignOutButton } from "../components/SignOutButton";
-import { Badge } from "../components/ui/badge";
-import { buttonVariants } from "../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { createDemoPairing, listDemoDevices } from "../services/demo-store";
+import { TelemetryChart } from "../components/TelemetryChart";
+import { applyDemoCommand, createDemoPairing, getDemoCommands, getDemoDeviceSettings, getDemoTelemetry, listDemoDevices } from "../services/demo-store";
 import { cn } from "../../shared/utils/cn";
 
-const copy = {
-  pt: {
-    nav: {
-      challenge: "Desafio",
-      solution: "Solucao",
-      prototype: "Prototipo",
-      roadmap: "Roadmap",
-      team: "Equipa",
-      logout: "Logout",
-      demo: "DEMO",
-    },
-    hero: {
-      tag: "Inovacao Sustentavel | 100% OFF-Grid",
-      title: "HeatSpot OFF-Grid",
-      subtitle: "Control Center Inteligente",
-      description: "Protege ativos remotos com monitorizacao em tempo real, controlo termico inteligente e operacao continua.",
-      viewDevices: "Ver dispositivos",
-      newPairing: "Novo pairing",
-    },
-    stats: {
-      devices: "Dispositivos",
-      online: "Online",
-      checking: "A verificar",
-    },
-    overview: {
-      kicker: "O desafio",
-      title: "Infraestruturas vulneraveis ao frio extremo",
-      description: "O Control Center agrega autenticacao, pairing e telemetria para reduzir falhas operacionais em campo.",
-      pairingTitle: "Pairing e Provisionamento",
-      pairingDescription: "Cria codigo de pairing (8 chars, 10 min).",
-      quickFlow: "Fluxo rapido",
-      step1: "1. Regista o device_uid com nome.",
-      step2: "2. Gera credenciais de provisionamento.",
-      step3: "3. Ativa telemetria e controlo remoto.",
-      fleet: "Fleet ativa",
-      devicesOnline: "Dispositivos online",
-      pending: "Acoes pendentes",
-    },
-    fleet: {
-      lastSeen: "Last seen",
-      noTelemetry: "Sem telemetria ainda",
-      openDevice: "Abrir dispositivo",
-      empty: "Ainda nao tens dispositivos associados. Cria o primeiro pairing code para iniciar.",
-    },
-    status: {
-      online: "online",
-      offline: "offline",
-      warning: "warning",
-    },
-  },
-  en: {
-    nav: {
-      challenge: "Challenge",
-      solution: "Solution",
-      prototype: "Prototype",
-      roadmap: "Roadmap",
-      team: "Team",
-      logout: "Logout",
-      demo: "DEMO",
-    },
-    hero: {
-      tag: "Sustainable Innovation | 100% OFF-Grid",
-      title: "HeatSpot OFF-Grid",
-      subtitle: "Smart Control Center",
-      description: "Protect remote assets with real-time monitoring, smart thermal control and continuous operation.",
-      viewDevices: "View devices",
-      newPairing: "New pairing",
-    },
-    stats: {
-      devices: "Devices",
-      online: "Online",
-      checking: "Needs check",
-    },
-    overview: {
-      kicker: "The challenge",
-      title: "Infrastructure exposed to extreme cold",
-      description: "The Control Center combines authentication, pairing and telemetry to reduce field failures.",
-      pairingTitle: "Pairing and Provisioning",
-      pairingDescription: "Create pairing code (8 chars, 10 min).",
-      quickFlow: "Quick flow",
-      step1: "1. Register device_uid with name.",
-      step2: "2. Generate provisioning credentials.",
-      step3: "3. Enable telemetry and remote control.",
-      fleet: "Active fleet",
-      devicesOnline: "Devices online",
-      pending: "Pending actions",
-    },
-    fleet: {
-      lastSeen: "Last seen",
-      noTelemetry: "No telemetry yet",
-      openDevice: "Open device",
-      empty: "No devices associated yet. Create your first pairing code to start.",
-    },
-    status: {
-      online: "online",
-      offline: "offline",
-      warning: "warning",
-    },
-  },
+const unavailable = "--";
+const tempMin = 2;
+const tempMax = 20;
+
+const iconPaths = {
+  home: "M3 11.5 12 4l9 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-5v6h-5A1.5 1.5 0 0 1 3 19.5v-8Z",
+  devices: "M5 5h14v10H5V5Zm3 14h8M10 15v4m4-4v4",
+  automation: "M5 7h4m6 0h4M5 17h4m6 0h4M9 7a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm2 10a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z",
+  settings: "M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Zm0-5 1.2 2.5 2.8.4-2 2 .5 2.8-2.5-1.3-2.5 1.3.5-2.8-2-2 2.8-.4L12 3.5Z",
+  wifi: "M4 9c4.7-4 11.3-4 16 0M7 12.5c2.9-2.4 7.1-2.4 10 0M10 16c1.2-.9 2.8-.9 4 0m-2 3h.01",
+  battery: "M6 7h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm13 3h1.5v4H19M8 10v4",
+  temperature: "M10 4a2 2 0 0 1 4 0v8.3a4 4 0 1 1-4 0V4Zm2 10v-4",
+  target: "M12 4v3m0 10v3m8-8h-3M7 12H4m12.3-4.3-2.1 2.1M9.8 14.2l-2.1 2.1m8.6 0-2.1-2.1M9.8 9.8 7.7 7.7M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z",
+  current: "M6 19h12M8 17l3-10 3 6 2-4 2 8",
+  flame: "M12 21c-3.2 0-6-2.4-6-6 0-2.5 1.4-4.2 3-5.6.8-.7 1.3-1.9 1-3.4 2.7 1.2 4.6 3.5 4.7 6.3.7-.6 1.2-1.5 1.4-2.6 1.3 1.1 2 2.8 2 5.1 0 3.8-2.8 6.2-6.1 6.2Z",
+  mode: "M12 3a9 9 0 1 0 9 9h-4a5 5 0 1 1-5-5V3Zm2 1v6h6",
+  check: "M5 12.5 9.5 17 19 7",
+  alert: "M12 4 3 20h18L12 4Zm0 5v5m0 3h.01",
+  clock: "M12 6v6l4 2m5-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+  plus: "M12 5v14m-7-7h14",
 };
 
-const statusVariant = (status) => {
-  if (status === "online") return "success";
-  if (status === "offline") return "outline";
+function Icon({ name, className }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+      <path d={iconPaths[name]} />
+    </svg>
+  );
+}
+
+const formatNumber = (value, digits = 1) => (Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : unavailable);
+
+const formatTemperature = (value) => (Number.isFinite(Number(value)) ? `${Number(value).toFixed(1)}` : unavailable);
+
+const formatDate = (value) => {
+  if (!value) return unavailable;
+  return new Date(value).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+};
+
+const normalizeMode = (mode) => {
+  if (mode === "AUTO") return "AUTOMATIC";
+  if (mode === "MANUAL") return "MANUAL";
+  return mode ?? unavailable;
+};
+
+const resolveBatteryStatus = (latest) => {
+  if (!latest) return { tone: "unknown", label: "Unknown", detail: "No telemetry" };
+  if (latest.state === "LOW_BATT") return { tone: "warning", label: "Warning", detail: "Low battery state" };
+  return { tone: "healthy", label: "Reported", detail: "Battery telemetry available" };
+};
+
+const resolveDeviceTone = (status) => {
+  if (status === "online") return "healthy";
+  if (status === "offline") return "error";
   return "warning";
 };
 
-const localizeStatus = (status, text) => {
-  if (status === "online") return text.status.online;
-  if (status === "offline") return text.status.offline;
-  return text.status.warning;
-};
+function StatusPill({ icon, label, tone = "unknown" }) {
+  return (
+    <span className={cn("control-status-pill", `control-status-pill--${tone}`)}>
+      <Icon className="h-4 w-4" name={icon} />
+      {label}
+    </span>
+  );
+}
+
+function MetricCard({ icon, tone = "blue", label, value, unit, subtitle, action, progress }) {
+  return (
+    <article className="control-metric-card">
+      <div className="flex items-start gap-4">
+        <span className={cn("control-metric-icon", `control-metric-icon--${tone}`)}>
+          <Icon className="h-7 w-7" name={icon} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="control-card-label">{label}</p>
+          <div className="mt-2 flex min-h-[46px] items-baseline gap-1">
+            <span className="control-card-value">{value}</span>
+            {unit ? <span className="control-card-unit">{unit}</span> : null}
+          </div>
+        </div>
+      </div>
+      {progress !== undefined ? (
+        <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#dce3ee]">
+          <div className="h-full rounded-full bg-[#16a338]" style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }} />
+        </div>
+      ) : null}
+      <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+        <p className="control-card-subtitle">{subtitle}</p>
+        {action}
+      </div>
+    </article>
+  );
+}
+
+function Sidebar({ activeDevice, session }) {
+  const userName = session?.fullName || session?.email?.split("@")[0] || "Control User";
+  const email = session?.email || "Authenticated user";
+  const initials = userName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((item) => item[0]?.toUpperCase())
+    .join("") || "HS";
+
+  return (
+    <aside className="control-sidebar">
+      <div className="px-5 pb-6 pt-8">
+        <img alt="HeatSpot OFF-GRID" className="mx-auto h-auto w-[172px]" src={heatSpotLogo} />
+      </div>
+
+      <nav aria-label="Control navigation" className="space-y-2 px-3">
+        <Link className="control-nav-item control-nav-item--active" to="/control">
+          <Icon className="h-5 w-5" name="home" />
+          Overview
+        </Link>
+        <a className="control-nav-item" href="#devices">
+          <Icon className="h-5 w-5" name="devices" />
+          Devices
+        </a>
+        <span aria-disabled="true" className="control-nav-item control-nav-item--disabled">
+          <Icon className="h-5 w-5" name="automation" />
+          Automation
+        </span>
+        <span aria-disabled="true" className="control-nav-item control-nav-item--disabled">
+          <Icon className="h-5 w-5" name="settings" />
+          Settings
+        </span>
+      </nav>
+
+      <div className="mt-8 border-t border-[#e4eaf3] px-4 pt-6">
+        <p className="control-sidebar-kicker">Quick actions</p>
+        <div className="mt-4 space-y-2">
+          <a className="control-quick-action" href="#heater-control">
+            <Icon className="h-4 w-4" name="wifi" />
+            Remote Control
+          </a>
+          <a className="control-quick-action" href="#devices">
+            <Icon className="h-4 w-4" name="plus" />
+            Pair Device
+          </a>
+        </div>
+      </div>
+
+      <div className="mt-auto p-3">
+        <div className="control-user-card">
+          <span className="control-avatar">{initials}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-bold text-[#0c1938]">{userName}</span>
+            <span className="block truncate text-xs text-[#53617d]">{email}</span>
+          </span>
+          <SignOutButton className="h-9 rounded-lg border-[#dce5f2] bg-white px-3 text-xs text-[#082b73] hover:bg-[#f4f7fb]" label="Logout" />
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function Topbar({ devices, selectedDeviceId, onDeviceChange, activeDevice, latest, settings }) {
+  const battery = resolveBatteryStatus(latest);
+  const currentDate = new Date().toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+
+  return (
+    <header className="control-topbar">
+      <div className="min-w-0 flex-1">
+        <label className="sr-only" htmlFor="control-device-selector">
+          Active device
+        </label>
+        <div className="control-device-select-wrap">
+          <Icon className="h-5 w-5 text-[#53617d]" name="devices" />
+          <select className="control-device-select" disabled={devices.length === 0} id="control-device-selector" onChange={(event) => onDeviceChange(event.target.value)} value={selectedDeviceId ?? ""}>
+            {devices.length === 0 ? <option value="">No devices</option> : null}
+            {devices.map((device) => (
+              <option key={device.id} value={device.id}>
+                {device.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="control-topbar-status">
+        <StatusPill icon="wifi" label={activeDevice ? activeDevice.status : "No device"} tone={activeDevice ? resolveDeviceTone(activeDevice.status) : "unknown"} />
+        <StatusPill icon="battery" label={`Battery ${battery.label}`} tone={battery.tone} />
+        <StatusPill icon="mode" label={`Mode ${normalizeMode(settings?.mode)}`} tone={settings?.mode ? "healthy" : "unknown"} />
+      </div>
+
+      <div className="control-date-pill">
+        <Icon className="h-4 w-4" name="clock" />
+        {currentDate}
+      </div>
+    </header>
+  );
+}
+
+function SystemStatusBar({ activeDevice, latest, settings }) {
+  const battery = resolveBatteryStatus(latest);
+  const deviceTone = activeDevice ? resolveDeviceTone(activeDevice.status) : "unknown";
+  const heaterActive = latest?.state === "HEATING" || Number(latest?.duty) > 0;
+  const telemetryTone = latest ? "healthy" : "unknown";
+
+  const items = [
+    {
+      label: "Device",
+      detail: activeDevice ? activeDevice.status : "Unavailable",
+      tone: deviceTone,
+    },
+    {
+      label: "Battery",
+      detail: battery.detail,
+      tone: battery.tone,
+    },
+    {
+      label: "Telemetry",
+      detail: latest ? "Latest values loaded" : "No telemetry",
+      tone: telemetryTone,
+    },
+    {
+      label: "Heater",
+      detail: latest ? (heaterActive ? "Currently heating" : "Standby") : "Unavailable",
+      tone: latest ? (heaterActive ? "healthy" : "unknown") : "unknown",
+    },
+    {
+      label: "Control Mode",
+      detail: normalizeMode(settings?.mode),
+      tone: settings?.mode ? "healthy" : "unknown",
+    },
+  ];
+
+  return (
+    <section className="control-status-bar" aria-label="System status">
+      <h2 className="sr-only">System status</h2>
+      {items.map((item) => (
+        <div className="control-status-item" key={item.label}>
+          <span className={cn("control-status-dot", `control-status-dot--${item.tone}`)}>
+            <Icon className="h-5 w-5" name={item.tone === "warning" || item.tone === "error" ? "alert" : "check"} />
+          </span>
+          <span>
+            <span className="block font-bold text-[#0c1938]">{item.label}</span>
+            <span className="block text-sm text-[#53617d]">{item.detail}</span>
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
 
 export default function DashboardPage() {
-  const { language } = useLanguage();
-  const text = copy[language] ?? copy.en;
-
+  const { session } = useAuth();
   const [devices, setDevices] = useState(() => listDemoDevices());
+  const [selectedDeviceId, setSelectedDeviceId] = useState("");
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  const metrics = useMemo(() => {
-    const online = devices.filter((device) => device.status === "online").length;
-    const offline = devices.filter((device) => device.status === "offline").length;
-    const warning = Math.max(devices.length - online - offline, 0);
+  useEffect(() => {
+    if (!selectedDeviceId && devices[0]?.id) {
+      setSelectedDeviceId(devices[0].id);
+      return;
+    }
 
-    return {
-      online,
-      offline,
-      warning,
-    };
-  }, [devices]);
+    if (selectedDeviceId && devices.length > 0 && !devices.some((device) => device.id === selectedDeviceId)) {
+      setSelectedDeviceId(devices[0].id);
+    }
+  }, [devices, selectedDeviceId]);
+
+  const activeDevice = useMemo(
+    () => devices.find((device) => device.id === selectedDeviceId) ?? devices[0] ?? null,
+    [devices, selectedDeviceId],
+  );
+
+  const settings = useMemo(() => (activeDevice ? getDemoDeviceSettings(activeDevice.id) : null), [activeDevice, refreshToken]);
+  const telemetry = useMemo(() => (activeDevice ? getDemoTelemetry(activeDevice.id) : []), [activeDevice, refreshToken]);
+  const commands = useMemo(() => (activeDevice ? getDemoCommands(activeDevice.id) : []), [activeDevice, refreshToken]);
+  const latest = telemetry.at(-1) ?? null;
+  const battery = resolveBatteryStatus(latest);
+  const heaterActive = latest?.state === "HEATING" || Number(latest?.duty) > 0;
 
   const handleCreatePairing = async ({ device_uid, name }) => {
     const result = createDemoPairing({ device_uid, name });
-    setDevices(listDemoDevices());
+    const nextDevices = listDemoDevices();
+    setDevices(nextDevices);
+    const createdDevice = nextDevices.find((device) => device.device_uid.toLowerCase() === result.deviceUid.toLowerCase());
+    if (createdDevice) {
+      setSelectedDeviceId(createdDevice.id);
+    }
     return result;
   };
 
+  const handleApplyCommand = async ({ deviceId, payload }) => {
+    try {
+      const result = await applyDemoCommand({ deviceId, payload });
+      setRefreshToken((value) => value + 1);
+      setDevices(listDemoDevices());
+      return result;
+    } catch (error) {
+      setRefreshToken((value) => value + 1);
+      throw error;
+    }
+  };
+
   return (
-    <main className="control-app min-h-screen bg-[#c9d3e5]">
-      <section className="hs-hero-bg relative overflow-hidden px-4 pb-24 pt-4 md:px-8 md:pb-28 md:pt-6">
-        <div className="hs-hero-glow pointer-events-none absolute inset-0" />
-        <div className="hs-hero-grid pointer-events-none absolute inset-0" />
-        <div className="relative mx-auto max-w-7xl">
-          <div className="hs-reveal mx-auto flex w-full max-w-6xl items-center justify-between gap-2 rounded-full border border-white/20 bg-[#112b76]/78 px-3 py-2 shadow-[0_8px_26px_rgba(4,11,40,.35)] backdrop-blur md:px-5">
-            <div className="flex items-center gap-2 text-white">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffb11f] font-heading text-sm font-bold text-[#081956]">
-                *
-              </span>
-              <span className="text-sm font-semibold md:text-lg">HeatSpot OFF-Grid</span>
-            </div>
+    <main className="control-app control-dashboard-shell">
+      <Sidebar activeDevice={activeDevice} session={session} />
 
-            <div className="hidden items-center gap-7 text-[15px] font-semibold md:flex">
-              <a className="hs-nav-item" href="#overview">
-                {text.nav.challenge}
-              </a>
-              <a className="hs-nav-item" href="#pairing">
-                {text.nav.solution}
-              </a>
-              <a className="hs-nav-item" href="#fleet">
-                {text.nav.prototype}
-              </a>
-              <span className="hs-nav-item">{text.nav.roadmap}</span>
-              <span className="hs-nav-item">{text.nav.team}</span>
-            </div>
+      <section className="control-main">
+        <Topbar activeDevice={activeDevice} devices={devices} latest={latest} onDeviceChange={setSelectedDeviceId} selectedDeviceId={activeDevice?.id ?? ""} settings={settings} />
 
-            <div className="flex items-center gap-2">
-              <span className="hidden rounded-full border border-orange-200/40 bg-orange-300/20 px-3 py-1 text-xs font-semibold text-orange-100 sm:inline-flex">
-                {text.nav.demo}
-              </span>
+        <div className="control-content">
+          {activeDevice ? (
+            <>
+              <section className="control-metric-grid" aria-label="Primary metrics">
+                <MetricCard
+                  icon="temperature"
+                  label="Current Temperature"
+                  subtitle={latest?.state ?? "Telemetry loaded"}
+                  tone="orange"
+                  unit={latest ? "\u00b0C" : ""}
+                  value={formatTemperature(latest?.t_internal)}
+                />
+                <MetricCard
+                  action={
+                    <a className="control-small-action" href="#heater-control">
+                      Edit
+                    </a>
+                  }
+                  icon="target"
+                  label="Target Temperature"
+                  subtitle={`Set point range ${tempMin}-${tempMax} C`}
+                  tone="orange"
+                  unit={settings ? "\u00b0C" : ""}
+                  value={formatTemperature(settings?.t_set)}
+                />
+                <MetricCard
+                  icon="battery"
+                  label="Battery Voltage"
+                  subtitle={battery.detail}
+                  tone="green"
+                  value={latest?.v_batt !== undefined ? formatNumber(latest.v_batt, 2) : unavailable}
+                  unit={latest?.v_batt !== undefined ? "V" : ""}
+                />
+                <MetricCard
+                  icon="current"
+                  label="Heater Current"
+                  subtitle="Existing telemetry metric"
+                  tone="blue"
+                  value={latest?.i_heater !== undefined ? formatNumber(latest.i_heater, 2) : unavailable}
+                  unit={latest?.i_heater !== undefined ? "A" : ""}
+                />
+                <MetricCard
+                  icon="flame"
+                  label="Heater Status"
+                  subtitle={latest ? (heaterActive ? "Currently heating" : "Standby") : "Not reported"}
+                  tone="orange"
+                  value={latest ? (heaterActive ? "ON" : "OFF") : unavailable}
+                />
+                <MetricCard
+                  icon="mode"
+                  label="Operating Mode"
+                  subtitle={settings?.mode === "AUTO" ? "Automatic thermal control" : settings?.mode === "MANUAL" ? "Manual remote control" : "Reported mode"}
+                  tone="blue"
+                  value={normalizeMode(settings?.mode)}
+                />
+              </section>
 
-              <SignOutButton
-                className="h-9 border-[#f0b135] bg-[#ffb11f] px-4 text-sm text-[#081956] hover:bg-[#f2aa19] hover:text-[#081956]"
-                label={text.nav.logout}
-                variant="outline"
-              />
-            </div>
-          </div>
+              <section className="control-main-grid">
+                <article className="control-panel">
+                  <div className="control-panel-header">
+                    <div>
+                      <p className="control-panel-kicker">Temperature History</p>
+                      <h2 className="control-panel-title">Thermal telemetry</h2>
+                    </div>
+                    <div className="control-range-tabs" aria-label="Telemetry range">
+                      <span aria-disabled="true">6H</span>
+                      <span className="is-active">24H</span>
+                      <span aria-disabled="true">7D</span>
+                      <span aria-disabled="true">30D</span>
+                    </div>
+                  </div>
+                  <TelemetryChart points={telemetry.map((row) => ({ ts: row.ts, t_internal: row.t_internal, duty: row.duty }))} showDuty={false} targetTemperature={settings?.t_set} />
+                </article>
 
-          <div className="hs-reveal hs-delay-1 mx-auto mt-12 max-w-5xl text-center text-white md:mt-16">
-            <p className="mx-auto inline-flex rounded-full border border-blue-200/35 bg-blue-200/15 px-4 py-1 text-xs font-semibold text-blue-50">
-              {text.hero.tag}
-            </p>
-            <h1 className="mt-6 font-heading text-5xl leading-[1.02] md:text-7xl">
-              {text.hero.title}
-              <span className="mt-1 block text-[#ffb928]">{text.hero.subtitle}</span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-3xl text-lg text-blue-100 md:text-2xl">{text.hero.description}</p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a className={cn(buttonVariants({ variant: "default" }), "h-12 px-7 text-base")} href="#fleet">
-                {text.hero.viewDevices}
-              </a>
-              <a
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "h-12 border-white/35 bg-white/10 px-7 text-base text-white hover:bg-white/20 hover:text-white",
+                <article className="control-panel" id="heater-control">
+                  <div className="control-panel-header">
+                    <div>
+                      <p className="control-panel-kicker">Heater Control</p>
+                      <h2 className="control-panel-title">Remote command</h2>
+                    </div>
+                    <StatusPill icon="mode" label={normalizeMode(settings?.mode)} tone={settings?.mode ? "healthy" : "unknown"} />
+                  </div>
+                  <DeviceControlForm
+                    deviceId={activeDevice.id}
+                    initialMode={settings?.mode ?? "AUTO"}
+                    initialTSet={Number(settings?.t_set ?? 8)}
+                    key={`${activeDevice.id}-${settings?.updated_at ?? refreshToken}`}
+                    onApply={handleApplyCommand}
+                  />
+                </article>
+              </section>
+
+              <SystemStatusBar activeDevice={activeDevice} latest={latest} settings={settings} />
+            </>
+          ) : (
+            <section className="control-empty-state">
+              <img alt="HeatSpot OFF-GRID" className="mx-auto h-auto w-40" src={heatSpotLogo} />
+              <h1>No device paired yet</h1>
+              <p>Add the first device using the existing pairing workflow. No telemetry or controls are shown until a real device exists.</p>
+            </section>
+          )}
+
+          <section className="control-device-management" id="devices">
+            <article className="control-panel">
+              <div className="control-panel-header">
+                <div>
+                  <p className="control-panel-kicker">Devices</p>
+                  <h2 className="control-panel-title">Active fleet</h2>
+                </div>
+                <span className="control-count-pill">{devices.length} total</span>
+              </div>
+              <div className="control-device-list">
+                {devices.length === 0 ? (
+                  <p className="control-muted-box">No devices associated yet.</p>
+                ) : (
+                  devices.map((device) => (
+                    <button
+                      className={cn("control-device-row", device.id === activeDevice?.id ? "control-device-row--active" : "")}
+                      key={device.id}
+                      onClick={() => setSelectedDeviceId(device.id)}
+                      type="button"
+                    >
+                      <span>
+                        <span className="block font-bold">{device.name}</span>
+                        <span className="block text-xs text-[#53617d]">{device.device_uid}</span>
+                      </span>
+                      <span className={cn("control-row-status", `control-row-status--${resolveDeviceTone(device.status)}`)}>{device.status}</span>
+                    </button>
+                  ))
                 )}
-                href="#pairing"
-              >
-                {text.hero.newPairing}
-              </a>
-            </div>
-          </div>
-
-          <div className="hs-reveal hs-delay-2 mx-auto mt-10 grid max-w-6xl gap-4 md:grid-cols-3">
-            <div className="hs-glass-card rounded-[24px] p-6 text-center text-white">
-              <p className="font-heading text-5xl text-[#ffc14a]">{devices.length}</p>
-              <p className="mt-2 text-2xl text-blue-100">{text.stats.devices}</p>
-            </div>
-            <div className="hs-glass-card rounded-[24px] p-6 text-center text-white">
-              <p className="font-heading text-5xl text-[#ffc14a]">{metrics.online}</p>
-              <p className="mt-2 text-2xl text-blue-100">{text.stats.online}</p>
-            </div>
-            <div className="hs-glass-card rounded-[24px] p-6 text-center text-white">
-              <p className="font-heading text-5xl text-[#ffc14a]">{metrics.offline + metrics.warning}</p>
-              <p className="mt-2 text-2xl text-blue-100">{text.stats.checking}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto -mt-10 w-full max-w-7xl px-4 pb-8 md:px-8 md:pb-12" id="overview">
-        <div className="hs-reveal hs-delay-1 rounded-[30px] border border-blue-100/90 bg-[#d3dceb] p-6 shadow-[0_14px_40px_rgba(12,30,79,.13)] md:p-8">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#2e56cd]">{text.overview.kicker}</p>
-            <h2 className="mx-auto mt-2 max-w-4xl font-heading text-4xl leading-tight text-[#0a1b58] md:text-6xl">{text.overview.title}</h2>
-            <p className="mx-auto mt-4 max-w-4xl text-lg text-[#556b98] md:text-2xl">{text.overview.description}</p>
-          </div>
-
-          <div className="mt-8 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(0,1fr))]">
-            <Card className="border-blue-100/85 bg-white/92" id="pairing">
-              <CardHeader className="pb-3">
-                <CardTitle className="font-heading text-2xl text-[#0a1b58]">{text.overview.pairingTitle}</CardTitle>
-                <CardDescription>{text.overview.pairingDescription}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4 rounded-xl border border-blue-100/90 bg-[#f6f9ff] p-3 text-sm text-[#21376d]">
-                  <p className="font-semibold">{text.overview.quickFlow}</p>
-                  <ul className="mt-1 space-y-1">
-                    <li>{text.overview.step1}</li>
-                    <li>{text.overview.step2}</li>
-                    <li>{text.overview.step3}</li>
-                  </ul>
-                </div>
-                <AddDeviceForm onCreatePairing={handleCreatePairing} />
-              </CardContent>
-            </Card>
-
-            <Card className="border-blue-100/85 bg-white/92">
-              <CardHeader>
-                <CardTitle className="font-heading text-6xl text-[#e44134]">{devices.length}</CardTitle>
-                <CardDescription className="text-base font-semibold text-[#2f467b]">{text.overview.fleet}</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="border-blue-100/85 bg-white/92">
-              <CardHeader>
-                <CardTitle className="font-heading text-6xl text-[#e44134]">{metrics.online}</CardTitle>
-                <CardDescription className="text-base font-semibold text-[#2f467b]">{text.overview.devicesOnline}</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="border-blue-100/85 bg-white/92">
-              <CardHeader>
-                <CardTitle className="font-heading text-6xl text-[#e44134]">{metrics.offline + metrics.warning}</CardTitle>
-                <CardDescription className="text-base font-semibold text-[#2f467b]">{text.overview.pending}</CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-4 pb-12 md:px-8 md:pb-14" id="fleet">
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {devices.map((device, index) => (
-            <Card
-              className={cn(
-                "hs-reveal group border-blue-100/80 bg-white/95 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_44px_rgba(9,25,71,.18)]",
-                index % 3 === 1 ? "hs-delay-1" : "",
-                index % 3 === 2 ? "hs-delay-2" : "",
-              )}
-              key={device.id}
-            >
-              <CardHeader className="pb-4">
-                <div className="mb-3 h-1 w-20 rounded-full bg-[linear-gradient(140deg,#0f45cd,#f08728)]" />
-                <div className="flex items-center justify-between gap-3">
-                  <CardTitle className="font-heading text-xl">{device.name}</CardTitle>
-                  <Badge variant={statusVariant(device.status)}>{localizeStatus(device.status, text)}</Badge>
-                </div>
-                <CardDescription className="pt-1 text-[#3f5284]">{device.device_uid}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="rounded-xl border border-blue-100/80 bg-[#f4f7ff] px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5a6b96]">{text.fleet.lastSeen}</p>
-                  <p className="mt-1 text-sm text-[#22376f]">
-                    {device.last_seen_at ? new Date(device.last_seen_at).toLocaleString() : text.fleet.noTelemetry}
-                  </p>
-                </div>
-                <Link
-                  className={cn(buttonVariants({ variant: "default" }), "w-full justify-center text-sm group-hover:brightness-105")}
-                  to={`/control/device/${device.id}`}
-                >
-                  {text.fleet.openDevice}
+              </div>
+              {activeDevice ? (
+                <Link className="control-secondary-link mt-4" to={`/control/device/${activeDevice.id}`}>
+                  Open technical device page
                 </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              ) : null}
+            </article>
 
-        {devices.length === 0 ? (
-          <Card className="mt-6 border-dashed border-blue-200/90 bg-white/70">
-            <CardContent className="p-6 text-sm text-[#355089]">{text.fleet.empty}</CardContent>
-          </Card>
-        ) : null}
+            <article className="control-panel">
+              <div className="control-panel-header">
+                <div>
+                  <p className="control-panel-kicker">Pairing</p>
+                  <h2 className="control-panel-title">Add device</h2>
+                </div>
+              </div>
+              <AddDeviceForm onCreatePairing={handleCreatePairing} />
+            </article>
+          </section>
+
+          {commands.length > 0 ? (
+            <section className="control-recent-commands">
+              <div className="control-panel-header">
+                <div>
+                  <p className="control-panel-kicker">Commands</p>
+                  <h2 className="control-panel-title">Recent acknowledgements</h2>
+                </div>
+              </div>
+              <div className="control-command-list">
+                {commands.slice(0, 4).map((command) => (
+                  <div className="control-command-row" key={command.id}>
+                    <span>
+                      <span className="block font-bold text-[#0c1938]">{command.command_type}</span>
+                      <span className="block text-xs text-[#53617d]">{formatDate(command.created_at)}</span>
+                    </span>
+                    <span className="control-count-pill">{command.status}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </div>
       </section>
     </main>
   );

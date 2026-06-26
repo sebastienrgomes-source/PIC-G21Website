@@ -1,14 +1,12 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useLanguage } from "../../marketing/context/LanguageContext";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Select } from "./ui/select";
 
-const modeOptions = [
-  { value: "AUTO", label: "Automatico" },
-  { value: "MANUAL", label: "Manual" },
-];
+const minTemperature = 2;
+const maxTemperature = 20;
+const temperatureStep = 0.5;
 
 const copy = {
   pt: {
@@ -21,8 +19,6 @@ const copy = {
       apply: "Aplicar",
       heaterOn: "Ligar aquecedor",
       heaterOff: "Desligar aquecedor",
-      autoMode: "Modo automatico",
-      manualMode: "Modo manual",
     },
     errors: {
       fallback: "Falha ao publicar no MQTT.",
@@ -42,8 +38,6 @@ const copy = {
       apply: "Apply",
       heaterOn: "Turn heater on",
       heaterOff: "Turn heater off",
-      autoMode: "Automatic mode",
-      manualMode: "Manual mode",
     },
     errors: {
       fallback: "Falha ao publicar no MQTT.",
@@ -64,6 +58,16 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+
+  const clampTemperature = (value) => {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) return tSet;
+    return Math.min(maxTemperature, Math.max(minTemperature, numericValue));
+  };
+
+  const adjustTemperature = (delta) => {
+    setTSet((value) => clampTemperature(Number((value + delta).toFixed(1))));
+  };
 
   const sendCommand = async (payload) => {
     setBusy(true);
@@ -88,84 +92,102 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <div className="control-form">
+      <div className="control-form-section">
         <div className="flex items-center justify-between gap-3">
-          <Label className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4d5f8e]" htmlFor="tset">
+          <Label className="control-form-label" htmlFor="tset">
             {text.labels.setpoint}
           </Label>
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#183f95]">
-            {tSet.toFixed(1)} C
-          </span>
+          <Input
+            className="control-temp-input"
+            max={maxTemperature}
+            min={minTemperature}
+            onChange={(event) => setTSet(clampTemperature(event.target.value))}
+            step={temperatureStep}
+            type="number"
+            value={tSet}
+          />
         </div>
-        <div className="rounded-2xl border border-blue-100/80 bg-[#f5f8ff] p-3">
-          <div className="flex items-center gap-3">
-            <input
-              className="h-2 w-full accent-[hsl(var(--primary))]"
-              id="tset"
-              max={20}
-              min={2}
-              onChange={(event) => setTSet(Number(event.target.value))}
-              step={0.5}
-              type="range"
-              value={tSet}
-            />
-            <Input
-              className="h-10 w-24 rounded-lg border-blue-200 bg-white"
-              max={20}
-              min={2}
-              onChange={(event) => setTSet(Number(event.target.value))}
-              step={0.5}
-              type="number"
-              value={tSet}
-            />
+
+        <div className="control-temp-stepper">
+          <Button aria-label="Decrease target temperature" className="control-step-button" disabled={busy || tSet <= minTemperature} onClick={() => adjustTemperature(-temperatureStep)} variant="outline">
+            -
+          </Button>
+          <div className="control-temp-readout">
+            <span>{tSet.toFixed(1)}</span>
+            <small>C</small>
           </div>
+          <Button aria-label="Increase target temperature" className="control-step-button control-step-button--hot" disabled={busy || tSet >= maxTemperature} onClick={() => adjustTemperature(temperatureStep)}>
+            +
+          </Button>
+        </div>
+
+        <input
+          aria-label={text.labels.setpoint}
+          className="control-range"
+          id="tset"
+          max={maxTemperature}
+          min={minTemperature}
+          onChange={(event) => setTSet(Number(event.target.value))}
+          step={temperatureStep}
+          type="range"
+          value={tSet}
+        />
+        <div className="control-range-labels">
+          <span>{minTemperature}C</span>
+          <span>{maxTemperature}C</span>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold uppercase tracking-[0.08em] text-[#4d5f8e]" htmlFor="mode">
+      <div className="control-form-section">
+        <Label className="control-form-label" htmlFor="mode-auto">
           {text.labels.mode}
         </Label>
-        <Select
-          className="h-11 rounded-xl border-blue-200 bg-[#f7f9ff]"
-          id="mode"
-          onChange={(event) => setMode(event.target.value)}
-          options={modeOptions}
-          value={mode}
-        />
+        <div aria-label={text.labels.mode} className="control-mode-switch" role="group">
+          <Button
+            className={mode === "AUTO" ? "is-active" : ""}
+            disabled={busy}
+            id="mode-auto"
+            onClick={() => {
+              setMode("AUTO");
+              void sendCommand({ automatic_mode: true });
+            }}
+            variant="outline"
+          >
+            Automatic
+          </Button>
+          <Button
+            className={mode === "MANUAL" ? "is-active" : ""}
+            disabled={busy}
+            onClick={() => {
+              setMode("MANUAL");
+              void sendCommand({ automatic_mode: false });
+            }}
+            variant="outline"
+          >
+            Manual
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: true })}>
-          {text.actions.heaterOn}
-        </Button>
-        <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: false })} variant="outline">
-          {text.actions.heaterOff}
-        </Button>
-        <Button
-          className="h-11"
-          disabled={busy}
-          onClick={() => {
-            setMode("AUTO");
-            void sendCommand({ automatic_mode: true });
-          }}
-          variant="outline"
-        >
-          {text.actions.autoMode}
-        </Button>
-        <Button
-          className="h-11"
-          disabled={busy}
-          onClick={() => {
-            setMode("MANUAL");
-            void sendCommand({ automatic_mode: false });
-          }}
-          variant="outline"
-        >
-          {text.actions.manualMode}
-        </Button>
-      </div>
+      {mode === "AUTO" ? (
+        <div className="control-mode-message">
+          <span className="control-mode-check">OK</span>
+          <span>
+            <strong>Automatic Thermal Control Active</strong>
+            <small>Maintains the target temperature automatically.</small>
+          </span>
+        </div>
+      ) : (
+        <div className="control-manual-actions">
+          <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: true })}>
+            {text.actions.heaterOn}
+          </Button>
+          <Button className="h-11" disabled={busy} onClick={() => sendCommand({ heater_enabled: false })} variant="outline">
+            {text.actions.heaterOff}
+          </Button>
+        </div>
+      )}
 
       <Button className="h-11 w-full" disabled={busy} onClick={apply}>
         {busy ? text.actions.applying : text.actions.apply}
@@ -175,7 +197,11 @@ export function DeviceControlForm({ deviceId, initialMode, initialTSet, onApply 
       {result ? (
         <div className="rounded-2xl border border-emerald-300/70 bg-emerald-50 p-3 text-sm text-emerald-900">
           <p className="font-semibold">{text.result.sent}</p>
-          {result.topic ? <p className="mt-1 break-all">{text.result.topic}: {result.topic}</p> : null}
+          {result.topic ? (
+            <p className="mt-1 break-all">
+              {text.result.topic}: {result.topic}
+            </p>
+          ) : null}
           <code className="mt-2 block whitespace-pre-wrap break-all rounded-lg bg-white/70 px-2 py-1 font-mono text-[11px] leading-5">
             {JSON.stringify(result.payload, null, 2)}
           </code>
