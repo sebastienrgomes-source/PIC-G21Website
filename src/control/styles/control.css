@@ -230,26 +230,47 @@
 }
 
 .control-device-select-wrap {
+  position: relative;
   display: flex;
   width: min(340px, 100%);
   align-items: center;
-  gap: 12px;
   border: 1px solid #dfe7f2;
   border-radius: 10px;
   background: #ffffff;
-  padding: 0 14px;
+  padding: 0 44px;
   box-shadow: 0 8px 18px rgba(28, 48, 85, 0.05);
 }
 
+.control-device-select-wrap > svg {
+  position: absolute;
+  left: 16px;
+}
+
+.control-device-select-wrap::after {
+  position: absolute;
+  right: 18px;
+  height: 8px;
+  width: 8px;
+  border-bottom: 2px solid #53617d;
+  border-right: 2px solid #53617d;
+  content: "";
+  pointer-events: none;
+  transform: rotate(45deg) translateY(-2px);
+}
+
 .control-device-select {
+  appearance: none;
   min-height: 46px;
   min-width: 0;
+  width: 100%;
   flex: 1;
   border: 0;
   background: transparent;
   color: #0c1938;
   font-weight: 800;
   outline: none;
+  text-align: center;
+  text-align-last: center;
 }
 
 .control-topbar-status {
@@ -351,6 +372,30 @@
   font-size: clamp(30px, 2.3vw, 42px);
   font-weight: 800;
   line-height: 1;
+}
+
+.control-card-value-row {
+  display: flex;
+  min-height: 46px;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 8px;
+  min-width: 0;
+}
+
+.control-card-value-row--text {
+  justify-content: center;
+  width: 100%;
+}
+
+.control-card-value--text {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(18px, 1.1vw, 22px);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .control-card-unit {

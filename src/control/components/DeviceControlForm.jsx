@@ -5,13 +5,13 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 const minTemperature = 2;
-const maxTemperature = 20;
+const maxTemperature = 42;
 const temperatureStep = 0.5;
 
 const copy = {
   pt: {
     labels: {
-      setpoint: "Setpoint (2..20 C)",
+      setpoint: "Setpoint (2..42 C)",
       mode: "Modo",
     },
     actions: {
@@ -30,7 +30,7 @@ const copy = {
   },
   en: {
     labels: {
-      setpoint: "Setpoint (2..20 C)",
+      setpoint: "Setpoint (2..42 C)",
       mode: "Mode",
     },
     actions: {

@@ -11,7 +11,7 @@ import { cn } from "../../shared/utils/cn";
 
 const unavailable = "--";
 const tempMin = 2;
-const tempMax = 20;
+const tempMax = 42;
 
 const iconPaths = {
   home: "M3 11.5 12 4l9 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-5v6h-5A1.5 1.5 0 0 1 3 19.5v-8Z",
@@ -75,7 +75,7 @@ function StatusPill({ icon, label, tone = "unknown" }) {
   );
 }
 
-function MetricCard({ icon, tone = "blue", label, value, unit, subtitle, action, progress }) {
+function MetricCard({ icon, tone = "blue", label, value, unit, subtitle, action, progress, valueVariant = "numeric" }) {
   return (
     <article className="control-metric-card">
       <div className="flex items-start gap-4">
@@ -84,8 +84,8 @@ function MetricCard({ icon, tone = "blue", label, value, unit, subtitle, action,
         </span>
         <div className="min-w-0 flex-1">
           <p className="control-card-label">{label}</p>
-          <div className="mt-2 flex min-h-[46px] items-baseline gap-1">
-            <span className="control-card-value">{value}</span>
+          <div className={cn("control-card-value-row", valueVariant === "text" && "control-card-value-row--text")}>
+            <span className={cn("control-card-value", valueVariant === "text" && "control-card-value--text")}>{value}</span>
             {unit ? <span className="control-card-unit">{unit}</span> : null}
           </div>
         </div>
@@ -368,6 +368,7 @@ export default function DashboardPage() {
                   subtitle={settings?.mode === "AUTO" ? "Automatic thermal control" : settings?.mode === "MANUAL" ? "Manual remote control" : "Reported mode"}
                   tone="blue"
                   value={normalizeMode(settings?.mode)}
+                  valueVariant="text"
                 />
               </section>
 
