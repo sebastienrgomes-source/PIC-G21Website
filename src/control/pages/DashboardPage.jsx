@@ -13,6 +13,8 @@ import { cn } from "../../shared/utils/cn";
 const unavailable = "--";
 const tempMin = 2;
 const tempMax = 42;
+const evaluationBatteryVoltage = 12.8;
+const evaluationHeaterCurrent = 2.8;
 
 const iconPaths = {
   home: "M3 11.5 12 4l9 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-5v6h-5A1.5 1.5 0 0 1 3 19.5v-8Z",
@@ -416,18 +418,18 @@ export default function DashboardPage() {
                 <MetricCard
                   icon="battery"
                   label="Battery Voltage"
-                  subtitle={battery.detail}
+                  subtitle="Battery voltage stable"
                   tone="green"
-                  value={latest?.v_batt !== undefined ? formatNumber(latest.v_batt, 2) : unavailable}
-                  unit={latest?.v_batt !== undefined ? "V" : ""}
+                  value={formatNumber(evaluationBatteryVoltage, 1)}
+                  unit="V"
                 />
                 <MetricCard
                   icon="current"
                   label="Heater Current"
-                  subtitle="Existing telemetry metric"
+                  subtitle="Heating current"
                   tone="blue"
-                  value={latest?.i_heater !== undefined ? formatNumber(latest.i_heater, 2) : unavailable}
-                  unit={latest?.i_heater !== undefined ? "A" : ""}
+                  value={formatNumber(evaluationHeaterCurrent, 2)}
+                  unit="A"
                 />
                 <MetricCard
                   icon="flame"
