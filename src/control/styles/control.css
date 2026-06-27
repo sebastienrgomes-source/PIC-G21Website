@@ -340,6 +340,13 @@
   padding: 16px;
 }
 
+.control-metric-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
 .control-metric-icon {
   display: inline-flex;
   height: 52px;
@@ -378,9 +385,11 @@
   display: flex;
   min-height: 46px;
   align-items: baseline;
+  justify-content: center;
   gap: 4px;
-  margin-top: 8px;
+  margin-top: 10px;
   min-width: 0;
+  width: 100%;
 }
 
 .control-card-value-row--text {
@@ -407,6 +416,17 @@
 .control-card-subtitle {
   margin: 0;
   color: #53617d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.control-inline-alert {
+  margin: -6px 0 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff1f0;
+  padding: 10px 12px;
+  color: #b42318;
   font-size: 13px;
   font-weight: 700;
 }

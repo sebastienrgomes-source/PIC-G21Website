@@ -6,6 +6,7 @@ import { AddDeviceForm } from "../components/AddDeviceForm";
 import { DeviceControlForm } from "../components/DeviceControlForm";
 import { SignOutButton } from "../components/SignOutButton";
 import { TelemetryChart } from "../components/TelemetryChart";
+import { useMqttDeviceFeed } from "../hooks/useMqttDeviceFeed";
 import { applyDemoCommand, createDemoPairing, getDemoCommands, getDemoDeviceSettings, getDemoTelemetry, listDemoDevices } from "../services/demo-store";
 import { cn } from "../../shared/utils/cn";
 
@@ -39,9 +40,11 @@ function Icon({ name, className }) {
   );
 }
 
-const formatNumber = (value, digits = 1) => (Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : unavailable);
+const hasNumericValue = (value) => value !== null && value !== undefined && Number.isFinite(Number(value));
 
-const formatTemperature = (value) => (Number.isFinite(Number(value)) ? `${Number(value).toFixed(1)}` : unavailable);
+const formatNumber = (value, digits = 1) => (hasNumericValue(value) ? Number(value).toFixed(digits) : unavailable);
+
+const formatTemperature = (value) => (hasNumericValue(value) ? `${Number(value).toFixed(1)}` : unavailable);
 
 const formatDate = (value) => {
   if (!value) return unavailable;
@@ -55,15 +58,75 @@ const normalizeMode = (mode) => {
 };
 
 const resolveBatteryStatus = (latest) => {
-  if (!latest) return { tone: "unknown", label: "Unknown", detail: "No telemetry" };
+  if (!latest || !hasNumericValue(latest.v_batt)) return { tone: "unknown", label: "Unknown", detail: "Battery not reported" };
   if (latest.state === "LOW_BATT") return { tone: "warning", label: "Warning", detail: "Low battery state" };
   return { tone: "healthy", label: "Reported", detail: "Battery telemetry available" };
 };
 
 const resolveDeviceTone = (status) => {
-  if (status === "online") return "healthy";
-  if (status === "offline") return "error";
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["online", "ok", "connected", "healthy", "wifi_connected"].includes(normalized)) return "healthy";
+  if (["offline", "error", "disconnected", "wifi_disconnected"].includes(normalized)) return "error";
   return "warning";
+};
+
+const readNumber = (payload, keys) => {
+  if (!payload) return null;
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) return Number(value);
+  }
+  return null;
+};
+
+const readBoolean = (payload, keys) => {
+  if (!payload) return null;
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "on", "1", "yes"].includes(normalized)) return true;
+      if (["false", "off", "0", "no"].includes(normalized)) return false;
+    }
+  }
+  return null;
+};
+
+const readText = (payload, keys) => {
+  if (!payload) return null;
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.trim() !== "") return value.trim();
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  }
+  return null;
+};
+
+const normalizeMqttTelemetry = ({ payload, receivedAt }, deviceId) => {
+  if (!payload) return null;
+
+  return {
+    id: `mqtt-${receivedAt}`,
+    device_id: deviceId,
+    ts: receivedAt,
+    t_internal: readNumber(payload, ["t_internal", "tInternal", "temperature_c", "internal_temperature_c", "temperature"]),
+    v_batt: readNumber(payload, ["v_batt", "vBatt", "battery_voltage", "battery_voltage_v", "battery_v", "voltage"]),
+    i_heater: readNumber(payload, ["i_heater", "iHeater", "heater_current", "heater_current_a", "current_a"]),
+    duty: readNumber(payload, ["duty", "duty_cycle", "dutyCycle"]),
+    state: readText(payload, ["state", "status"]),
+    heater_enabled: readBoolean(payload, ["heater_enabled", "heaterEnabled"]),
+    automatic_mode: readBoolean(payload, ["automatic_mode", "automaticMode"]),
+    target_temperature_c: readNumber(payload, ["target_temperature_c", "targetTemperatureC", "t_set", "tSet"]),
+    raw: payload,
+  };
+};
+
+const modeFromTelemetry = (telemetry, fallbackMode) => {
+  if (telemetry?.automatic_mode === true) return "AUTO";
+  if (telemetry?.automatic_mode === false) return "MANUAL";
+  return fallbackMode;
 };
 
 function StatusPill({ icon, label, tone = "unknown" }) {
@@ -78,17 +141,17 @@ function StatusPill({ icon, label, tone = "unknown" }) {
 function MetricCard({ icon, tone = "blue", label, value, unit, subtitle, action, progress, valueVariant = "numeric" }) {
   return (
     <article className="control-metric-card">
-      <div className="flex items-start gap-4">
+      <div className="control-metric-heading">
         <span className={cn("control-metric-icon", `control-metric-icon--${tone}`)}>
           <Icon className="h-7 w-7" name={icon} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="control-card-label">{label}</p>
-          <div className={cn("control-card-value-row", valueVariant === "text" && "control-card-value-row--text")}>
-            <span className={cn("control-card-value", valueVariant === "text" && "control-card-value--text")}>{value}</span>
-            {unit ? <span className="control-card-unit">{unit}</span> : null}
-          </div>
         </div>
+      </div>
+      <div className={cn("control-card-value-row", valueVariant === "text" && "control-card-value-row--text")}>
+        <span className={cn("control-card-value", valueVariant === "text" && "control-card-value--text")}>{value}</span>
+        {unit ? <span className="control-card-unit">{unit}</span> : null}
       </div>
       {progress !== undefined ? (
         <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#dce3ee]">
@@ -166,8 +229,9 @@ function Sidebar({ activeDevice, session }) {
   );
 }
 
-function Topbar({ devices, selectedDeviceId, onDeviceChange, activeDevice, latest, settings }) {
+function Topbar({ devices, selectedDeviceId, onDeviceChange, activeDevice, latest, settings, mqttFeed }) {
   const battery = resolveBatteryStatus(latest);
+  const reportedStatus = readText(mqttFeed?.status, ["status", "wifi_status"]) ?? activeDevice?.status;
   const currentDate = new Date().toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 
   return (
@@ -190,7 +254,8 @@ function Topbar({ devices, selectedDeviceId, onDeviceChange, activeDevice, lates
       </div>
 
       <div className="control-topbar-status">
-        <StatusPill icon="wifi" label={activeDevice ? activeDevice.status : "No device"} tone={activeDevice ? resolveDeviceTone(activeDevice.status) : "unknown"} />
+        <StatusPill icon="wifi" label={reportedStatus ?? "No device"} tone={reportedStatus ? resolveDeviceTone(reportedStatus) : "unknown"} />
+        <StatusPill icon="wifi" label={mqttFeed?.connected ? "MQTT Live" : "MQTT Waiting"} tone={mqttFeed?.connected ? "healthy" : "unknown"} />
         <StatusPill icon="battery" label={`Battery ${battery.label}`} tone={battery.tone} />
         <StatusPill icon="mode" label={`Mode ${normalizeMode(settings?.mode)}`} tone={settings?.mode ? "healthy" : "unknown"} />
       </div>
@@ -203,16 +268,17 @@ function Topbar({ devices, selectedDeviceId, onDeviceChange, activeDevice, lates
   );
 }
 
-function SystemStatusBar({ activeDevice, latest, settings }) {
+function SystemStatusBar({ activeDevice, latest, settings, mqttFeed }) {
   const battery = resolveBatteryStatus(latest);
-  const deviceTone = activeDevice ? resolveDeviceTone(activeDevice.status) : "unknown";
-  const heaterActive = latest?.state === "HEATING" || Number(latest?.duty) > 0;
+  const reportedStatus = readText(mqttFeed?.status, ["status", "wifi_status"]) ?? activeDevice?.status;
+  const deviceTone = reportedStatus ? resolveDeviceTone(reportedStatus) : "unknown";
+  const heaterActive = latest?.heater_enabled ?? (latest?.state === "HEATING" || Number(latest?.duty) > 0);
   const telemetryTone = latest ? "healthy" : "unknown";
 
   const items = [
     {
       label: "Device",
-      detail: activeDevice ? activeDevice.status : "Unavailable",
+      detail: reportedStatus ?? "Unavailable",
       tone: deviceTone,
     },
     {
@@ -221,9 +287,9 @@ function SystemStatusBar({ activeDevice, latest, settings }) {
       tone: battery.tone,
     },
     {
-      label: "Telemetry",
-      detail: latest ? "Latest values loaded" : "No telemetry",
-      tone: telemetryTone,
+      label: "MQTT",
+      detail: mqttFeed?.lastMessageAt ? `Last ${formatDate(mqttFeed.lastMessageAt)}` : mqttFeed?.connected ? "Waiting for ESP32 data" : "Not connected",
+      tone: mqttFeed?.connected ? "healthy" : mqttFeed?.error ? "error" : "unknown",
     },
     {
       label: "Heater",
@@ -278,11 +344,19 @@ export default function DashboardPage() {
   );
 
   const settings = useMemo(() => (activeDevice ? getDemoDeviceSettings(activeDevice.id) : null), [activeDevice, refreshToken]);
-  const telemetry = useMemo(() => (activeDevice ? getDemoTelemetry(activeDevice.id) : []), [activeDevice, refreshToken]);
+  const demoTelemetry = useMemo(() => (activeDevice ? getDemoTelemetry(activeDevice.id) : []), [activeDevice, refreshToken]);
   const commands = useMemo(() => (activeDevice ? getDemoCommands(activeDevice.id) : []), [activeDevice, refreshToken]);
+  const mqttFeed = useMqttDeviceFeed(activeDevice?.device_uid);
+  const liveTelemetry = useMemo(
+    () => mqttFeed.telemetryHistory.map((entry) => normalizeMqttTelemetry(entry, activeDevice?.id)).filter(Boolean),
+    [activeDevice?.id, mqttFeed.telemetryHistory],
+  );
+  const telemetry = liveTelemetry.length > 0 ? liveTelemetry : demoTelemetry;
   const latest = telemetry.at(-1) ?? null;
+  const currentMode = modeFromTelemetry(latest, settings?.mode);
+  const targetTemperature = latest?.target_temperature_c ?? settings?.t_set;
   const battery = resolveBatteryStatus(latest);
-  const heaterActive = latest?.state === "HEATING" || Number(latest?.duty) > 0;
+  const heaterActive = latest?.heater_enabled ?? (latest?.state === "HEATING" || Number(latest?.duty) > 0);
 
   const handleCreatePairing = async ({ device_uid, name }) => {
     const result = createDemoPairing({ device_uid, name });
@@ -312,7 +386,7 @@ export default function DashboardPage() {
       <Sidebar activeDevice={activeDevice} session={session} />
 
       <section className="control-main">
-        <Topbar activeDevice={activeDevice} devices={devices} latest={latest} onDeviceChange={setSelectedDeviceId} selectedDeviceId={activeDevice?.id ?? ""} settings={settings} />
+        <Topbar activeDevice={activeDevice} devices={devices} latest={latest} mqttFeed={mqttFeed} onDeviceChange={setSelectedDeviceId} selectedDeviceId={activeDevice?.id ?? ""} settings={{ ...(settings ?? {}), mode: currentMode }} />
 
         <div className="control-content">
           {activeDevice ? (
@@ -336,8 +410,8 @@ export default function DashboardPage() {
                   label="Target Temperature"
                   subtitle={`Set point range ${tempMin}-${tempMax} C`}
                   tone="orange"
-                  unit={settings ? "\u00b0C" : ""}
-                  value={formatTemperature(settings?.t_set)}
+                  unit={targetTemperature !== undefined ? "\u00b0C" : ""}
+                  value={formatTemperature(targetTemperature)}
                 />
                 <MetricCard
                   icon="battery"
@@ -365,9 +439,9 @@ export default function DashboardPage() {
                 <MetricCard
                   icon="mode"
                   label="Operating Mode"
-                  subtitle={settings?.mode === "AUTO" ? "Automatic thermal control" : settings?.mode === "MANUAL" ? "Manual remote control" : "Reported mode"}
+                  subtitle={currentMode === "AUTO" ? "Automatic thermal control" : currentMode === "MANUAL" ? "Manual remote control" : "Reported mode"}
                   tone="blue"
-                  value={normalizeMode(settings?.mode)}
+                  value={normalizeMode(currentMode)}
                   valueVariant="text"
                 />
               </section>
@@ -386,7 +460,7 @@ export default function DashboardPage() {
                       <span aria-disabled="true">30D</span>
                     </div>
                   </div>
-                  <TelemetryChart points={telemetry.map((row) => ({ ts: row.ts, t_internal: row.t_internal, duty: row.duty }))} showDuty={false} targetTemperature={settings?.t_set} />
+                  <TelemetryChart points={telemetry.map((row) => ({ ts: row.ts, t_internal: row.t_internal, duty: row.duty }))} showDuty={false} targetTemperature={targetTemperature} />
                 </article>
 
                 <article className="control-panel" id="heater-control">
@@ -395,8 +469,9 @@ export default function DashboardPage() {
                       <p className="control-panel-kicker">Heater Control</p>
                       <h2 className="control-panel-title">Remote command</h2>
                     </div>
-                    <StatusPill icon="mode" label={normalizeMode(settings?.mode)} tone={settings?.mode ? "healthy" : "unknown"} />
+                    <StatusPill icon="wifi" label={mqttFeed.connected ? "Live MQTT" : "Waiting MQTT"} tone={mqttFeed.connected ? "healthy" : "unknown"} />
                   </div>
+                  {mqttFeed.error ? <p className="control-inline-alert">{mqttFeed.error}</p> : null}
                   <DeviceControlForm
                     deviceId={activeDevice.id}
                     initialMode={settings?.mode ?? "AUTO"}
@@ -407,7 +482,7 @@ export default function DashboardPage() {
                 </article>
               </section>
 
-              <SystemStatusBar activeDevice={activeDevice} latest={latest} settings={settings} />
+              <SystemStatusBar activeDevice={activeDevice} latest={latest} mqttFeed={mqttFeed} settings={{ ...(settings ?? {}), mode: currentMode }} />
             </>
           ) : (
             <section className="control-empty-state">

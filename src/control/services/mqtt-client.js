@@ -6,6 +6,12 @@ export const MQTT_PASS = "Heatspot2026_";
 export const DEVICE_UID = "esp32-001";
 export const CMD_TOPIC = `heatspot/${DEVICE_UID}/cmd`;
 
+export const deviceTopics = {
+  cmd: (deviceUid = DEVICE_UID) => `heatspot/${deviceUid}/cmd`,
+  telemetry: (deviceUid = DEVICE_UID) => `heatspot/${deviceUid}/telemetry`,
+  status: (deviceUid = DEVICE_UID) => `heatspot/${deviceUid}/status`,
+};
+
 let client = null;
 let connectionPromise = null;
 
@@ -121,5 +127,81 @@ export const publishCommand = async (payload) => {
   } catch (error) {
     console.error("[MQTT] publish failed", error);
     throw error;
+  }
+};
+
+const parseJsonObject = (raw) => {
+  const parsed = JSON.parse(raw);
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  return { value: parsed };
+};
+
+export const subscribeDeviceMessages = async ({ deviceUid = DEVICE_UID, onTelemetry, onStatus, onError, onConnectionChange }) => {
+  const telemetryTopic = deviceTopics.telemetry(deviceUid);
+  const statusTopic = deviceTopics.status(deviceUid);
+  const topics = [telemetryTopic, statusTopic];
+  let active = true;
+
+  try {
+    const mqttClient = await connectClient();
+
+    if (!active) {
+      return () => {};
+    }
+
+    const handleMessage = (topic, payloadBuffer) => {
+      if (!active || !topics.includes(topic)) return;
+
+      const receivedAt = new Date().toISOString();
+      const raw = payloadBuffer.toString();
+
+      try {
+        const payload = parseJsonObject(raw);
+        if (topic === telemetryTopic) {
+          onTelemetry?.(payload, { topic, receivedAt, raw });
+        }
+        if (topic === statusTopic) {
+          onStatus?.(payload, { topic, receivedAt, raw });
+        }
+      } catch {
+        onError?.(new Error(`Mensagem MQTT invalida em ${topic}: JSON mal formado.`));
+      }
+    };
+
+    const handleError = (error) => {
+      onError?.(error);
+    };
+
+    const handleClose = () => {
+      onConnectionChange?.(false);
+    };
+
+    mqttClient.on("message", handleMessage);
+    mqttClient.on("error", handleError);
+    mqttClient.on("close", handleClose);
+    onConnectionChange?.(mqttClient.connected);
+
+    mqttClient.subscribe(topics, { qos: 1 }, (subscribeError) => {
+      if (subscribeError) {
+        onError?.(subscribeError);
+      }
+    });
+
+    return () => {
+      active = false;
+      mqttClient.removeListener("message", handleMessage);
+      mqttClient.removeListener("error", handleError);
+      mqttClient.removeListener("close", handleClose);
+      mqttClient.unsubscribe(topics, () => {});
+    };
+  } catch (error) {
+    onConnectionChange?.(false);
+    onError?.(error);
+    return () => {
+      active = false;
+    };
   }
 };
